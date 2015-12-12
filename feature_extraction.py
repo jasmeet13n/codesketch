@@ -2,6 +2,7 @@ import math
 
 class Features:
   def __init__(self, data):
+    # data is a list of strokes; each stroke is a list of coordinates
     self.data = data
     self.resampledData = []
     self.xMax = 0
@@ -12,7 +13,7 @@ class Features:
     self.rightToLeft = 0
     self.upToDown = 0
     self.downToUp = 0
-    self.overlap = 0
+    self.numStroke = 0
     self.totalStrokeLength = 0.0
     self.curviness = 0
     self.visualFeatures = []
@@ -31,20 +32,24 @@ class Features:
     ret.append((self.yMax - self.yMin) / (self.xMax - self.xMin))
     # curviness
     ret.append(self.curviness)
-    # overlap
-    ret.append(self.overlap)
+    # numStroke
+    ret.append(self.numStroke)
     return ret
 
   def calculateTotalStrokeLength(self):
     xLast = 0
     yLast = 0
     notFirst = False
-    for row in self.data:
-      if notFirst:
-        self.totalStrokeLength = self.totalStrokeLength + math.sqrt((row[0] - xLast)^2 + (row[1] - yLast)^2)
-      xLast = row[0]
-      yLast = row[1]
-      notFirst = True
+    # find if contians multiple strokes
+    self.numStroke = len(self.data)
+
+    for stroke in self.data:
+      for row in stroke:
+        if notFirst:
+          self.totalStrokeLength = self.totalStrokeLength + math.sqrt((row[0] - xLast)^2 + (row[1] - yLast)^2)
+        xLast = row[0]
+        yLast = row[1]
+        notFirst = True
 
   def calculateNonVisualFeatures(self):
     xLast = 0
@@ -89,13 +94,13 @@ class Features:
     
     self.curviness = angleSum / self.totalStrokeLength
 
-    # calculate whether there is an overlap
-
     # calculate sharpness
 
   def resampleTheData(self):
     n = 0
-    length = len(self.data)
+    length = 0
+    for stroke in self.data:
+      length = length + len(stroke)
     if length > 128:
       n = length / 128
     elif length > 64:
@@ -103,13 +108,17 @@ class Features:
     else:
       n = length / 32
     temp = n - 1
-    resampledData.append(data[0])
-    for row in data:
-      if(temp == 0):
-        resampledData.append(row)
-        temp = n - 1
-      else:
-        temp = temp - 1
+    first = True
+    resampledData.append((self.data[0])[0])
+    for stroke in self.data:
+      for row in stroke:
+        if first:
+          continue
+        if(temp == 0):
+          resampledData.append(row)
+          temp = n - 1
+        else:
+          temp = temp - 1
 
   def calculateVisualFeatures(self):
     Matrix = [[0 for x in range(5)] for x in range(5)]
