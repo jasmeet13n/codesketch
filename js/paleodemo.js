@@ -1,5 +1,3 @@
-
-
 $(document).ready(function(){
 	var mouseDown = 0;
 	$(document).mousedown(function() { 
@@ -8,6 +6,7 @@ $(document).ready(function(){
 	$(document).mouseup(function() {
 		--mouseDown;
 	});
+
 	var sketchEditor = new SketchEditor($("#sketch"),{
 		width:600,
 		height:1000
@@ -26,7 +25,7 @@ $(document).ready(function(){
 		// });
 		// currentStroke.setEnabledShapes(options);
 	
-		var recognizeRequest = new RecognizeStrokeRequest(currentStroke,options).success(
+		var recognizeRequest = new RecognizeStrokeRequest(currentStroke, options).success(
 			function(response){
 				var bestShape = response.bestShape;
 				if(bestShape)
@@ -37,7 +36,6 @@ $(document).ready(function(){
 		);
 		
 		recognizeRequest.send();
-		
 	});
 	
 	Messaging.registerDefaultResponseHandler(PaleoOptionsResponse,function(response){
