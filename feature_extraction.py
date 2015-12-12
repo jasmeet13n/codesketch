@@ -3,6 +3,7 @@ import math
 class Features:
   def __init__(self, data):
     self.data = data
+    self.resampledData = []
     self.xMax = 0
     self.xMin = 0
     self.yMax = 0
@@ -12,11 +13,15 @@ class Features:
     self.upToDown = 0
     self.downToUp = 0
     self.overlap = 0
-    self.totalStrokeLength = 0
+    self.totalStrokeLength = 0.0
     self.curviness = 0
+    self.visualFeatures = []
 
   def getFeatures(self):
     ret = []
+    # 25 values for visual matrix
+    for val in self.visualFeatures:
+      ret.append(val)
     # direction changes
     ret.append(self.leftToRight)
     ret.append(self.rightToLeft)
@@ -30,13 +35,26 @@ class Features:
     ret.append(self.overlap)
     return ret
 
-  def calculateFeatures(self):
+  def calculateTotalStrokeLength(self):
+    xLast = 0
+    yLast = 0
+    notFirst = False
+    for row in self.data:
+      if notFirst:
+        self.totalStrokeLength = self.totalStrokeLength + math.sqrt((row[0] - xLast)^2 + (row[1] - yLast)^2)
+      xLast = row[0]
+      yLast = row[1]
+      notFirst = True
+
+  def calculateNonVisualFeatures(self):
     xLast = 0
     yLast = 0
     notFirst = False
     angleSum = 0
+    currentLeftRight = 0 # 0 for going left, 1 for going right
+    currentUpDown = 0 # 0 for going up, 1 for going down
     
-    for row in self.data:
+    for row in self.resampledData:
       if self.xMax < row[0]:
         self.xMax = row[0]
       if self.xMin > row[0]:
@@ -46,15 +64,82 @@ class Features:
       if self.yMin > row[1]:
         self.yMin = row[1]
       if notFirst:
-        self.totalStrokeLength += math.sqrt((row[0] - xLast)^2 + (row[1] - yLast)^2)
-        oppSide = row[1] - yLast
-        adjSide = row[0] - xLast
+        oppSide = math.fabs(row[1] - yLast)
+        adjSide = math.fabs(row[0] - xLast)
         if adjSide != 0:
-          angleSum += math.fabs(math.atan(oppSide/adjSide))
+          angleSum = angleSum + math.fabs(math.atan(oppSide/adjSide))
+        
+        if currentLeftRight == 0 and row[0] > xLast:
+          self.leftToRight = self.leftToRight + 1
+          currentLeftRight = 1
+        elif currentLeftRight == 1 and row[0] < xLast:
+          self.rightToLeft = self.rightToLeft + 1
+          currentLeftRight = 0
+        
+        if currentUpDown == 0 and row[1] < yLast:
+          self.upToDown = self.upToDown + 1
+          currentUpDown = 1
+        elif currentUpDown == 1 and row[1] > yLast:
+          self.downToUp = self.downToUp + 1
+          currentUpDown = 0
+
       xLast = row[0]
       yLast = row[1]
       notFirst = True
     
-    self.curviness = angleSum / totalStrokeLength
+    self.curviness = angleSum / self.totalStrokeLength
 
     # calculate whether there is an overlap
+
+    # calculate sharpness
+
+  def resampleTheData(self):
+    n = 0
+    length = len(self.data)
+    if length > 128:
+      n = length / 128
+    elif length > 64:
+      n = length / 64
+    else:
+      n = length / 32
+    temp = n - 1
+    resampledData.append(data[0])
+    for row in data:
+      if(temp == 0):
+        resampledData.append(row)
+        temp = n - 1
+      else:
+        temp = temp - 1
+
+  def calculateVisualFeatures(self):
+    Matrix = [[0 for x in range(5)] for x in range(5)]
+    xCellLength = (self.xMax - self.xMin) / 5.0
+    yCellLength = (self.yMax - self.yMin) / 5.0
+    for row in self.resampledData:
+      x = 0
+      y = 0
+      if row[0] == self.xMin:
+        x = 0
+      elif row[0] == self.xMax:
+        x = 4
+      else:
+        x = math.floor(row[0] / xCellLength)
+
+      if row[1] == self.yMin:
+        y = 0
+      elif row[1] == self.yMax:
+        y = 4
+      else:
+        y = math.floor(row[1] / yCellLength)
+
+      Matrix[x][y] = 1
+
+    for row in Matrix:
+      for val in row:
+        self.visualFeatures.append(val)
+
+  def processFeatures(self):
+    calculateTotalStrokeLength()
+    resampleTheData()
+    calculateVisualFeatures()
+    calculateNonVisualFeatures()
