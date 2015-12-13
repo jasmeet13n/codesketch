@@ -58,11 +58,15 @@ $(document).ready(function(){
 		}
 		$(".select").bind('selectstart', function(e) { e.preventDefault(); return false; }, false);
 	});
-	
+
+  $("#undo-button").button().click(function(){
+    sketchEditor.undo();
+  });
+
 	$("#clear-button").button().click(function(){
-		sketchEditor.clear();
-	});
-	
+    sketchEditor.clear();
+  });
+
 	new PaleoOptionsRequest().send();
 	
 	var showStrokeInViewer = function(stroke,viewer){

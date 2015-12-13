@@ -51,13 +51,7 @@ SketchEditor = function(el, options) {
 	var canvas = $(".sketch-canvas",rootElement)[0];
 	var ctx = canvas.getContext("2d");
 	canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false; }, false);
-
-	var sketch = new Code(100);
-
-  var undoArray;
-  undoArray = new Array();
-  var redoArray;
-  redoArray = new Array();
+	var sketch = new Code(1);
 
 	var currentStroke = null;
 	var newThingsToBeDrawn = true;
@@ -69,7 +63,7 @@ SketchEditor = function(el, options) {
 	setMouseListeners = function () {
 		// Mouse down event listener.
 		$(canvas).mousedown(function (e) {
-			currentStroke = new Stroke();
+      currentStroke = new Stroke();
 			currentStroke.style = new Style();
 			currentStroke.style.stroke = new Color(100, 0, 200);
 			currentStroke.style.strokeWidth = 3;
@@ -89,11 +83,11 @@ SketchEditor = function(el, options) {
 		$(canvas).mouseup(function (e) {
 			if (currentStroke != null) {
         currentStroke.addPoint(new Point(e.offsetX, e.offsetY));
-        sketch.addStrokeToLine(currentStroke, 0);
-				onStrokeListener(currentStroke);
+        sketch.addStroke(currentStroke);
+				//onStrokeListener(currentStroke);
 				editor.newThingsAddedForDrawing();
 				currentStroke = null;
-			}
+      }
 		});
 	};
 
@@ -104,11 +98,21 @@ SketchEditor = function(el, options) {
 
 	// Clear the current  sketch.
 	this.clear = function(){
-		sketch = new Code(100);
+		sketch = new Code(1);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
-		currentStroke = null;
-		editor.newThingsAddedForDrawing();
+    drawGrid(ctx);
+    currentStroke = null;
 	};
+
+  this.undo = function() {
+    sketch.undo();
+    ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
+    drawGrid(ctx);
+    currentStroke = null;
+    ctx.save();
+    sketch.draw(ctx);
+    ctx.restore();
+  };
 
 	// Draw functions
 	var interval;
@@ -126,7 +130,7 @@ SketchEditor = function(el, options) {
 		if(newThingsToBeDrawn){
 			ctx.save();
 			if(currentStroke)
-				currentStroke.draw(ctx);
+				currentStroke.continueDraw(ctx);
 			ctx.restore();
 			ctx.save();
 			newThingsToBeDrawn = false;
@@ -201,8 +205,10 @@ SketchEditor = function(el, options) {
  * C O D E
  ******************************************/
 Code = function(numLines) {
+  this.lastEditedLine = [];
   this.lines = [];
   var strokesById = {};
+
   this.addLines = function(numLinesToAdd) {
     for (var i = 0; i < numLinesToAdd; ++i) {
       this.lines.push(new Line());
@@ -214,8 +220,21 @@ Code = function(numLines) {
     }
   };
   if (numLines > 0) {
-    this.addLines(numLines);
+    this.increaseLinesLengthTo(numLines);
   }
+
+  var predictLineNumber;
+  predictLineNumber = function(stroke) {
+    var bb = stroke.getBoundingBox();
+    var lineNumber = Math.floor(bb.cy/40);
+    console.log("Predicted Line Number: " + lineNumber);
+    return lineNumber;
+  };
+
+  this.addStroke = function(stroke) {
+    var predictedLineNumber = predictLineNumber(stroke);
+    this.addStrokeToLine(stroke, predictedLineNumber);
+  };
 
   this.addStrokeToLine = function(stroke, lineNumber){
     if (lineNumber >= this.lines.length) {
@@ -223,18 +242,28 @@ Code = function(numLines) {
     }
     this.lines[lineNumber].addStroke(stroke);
     strokesById[stroke.id] = stroke;
-  }
+    this.lastEditedLine.push(lineNumber);
+  };
+
+  this.undo = function() {
+    if (this.lastEditedLine.length == 0) {
+      return;
+    }
+    var lastLineIndex = this.lastEditedLine.pop();
+    var lastLine = this.lines[lastLineIndex];
+    lastLine.undo();
+  };
 
   this.getStrokeById = function(id){
     return strokesById[id];
-  }
+  };
 
   this.draw = function(ctx){
     ctx.lineWidth = 2;
     ctx.strokeStyle = "black";
     this.setStyle(ctx);
-    for(var i = 0; i < this.contents.length; ++i){
-      var component = this.contents[i];
+    for(var i = 0; i < this.lines.length; ++i){
+      var component = this.lines[i];
       component.draw(ctx);
     }
   }
@@ -245,6 +274,14 @@ Code = function(numLines) {
         ctx.lineWidth = this.style.strokeWidth;
       if(this.style.stroke)
         ctx.strokeStyle = this.style.stroke.toString();
+    }
+  }
+
+  this.print = function() {
+    console.log("Printing Stroke\n")
+    for (var i = 0; i < this.lines.length; ++i) {
+      var line = this.lines[i];
+      line.print();
     }
   }
 }
@@ -253,30 +290,49 @@ Code = function(numLines) {
  * L I N E
  ******************************************/
 Line = function() {
+  this.strokeHistory = [];
   this.strokes = [];
   var strokesById = {};
+
   this.addStroke = function(stroke){
     this.strokes.push(stroke);
     strokesById[stroke.id] = stroke;
-  }
+    this.strokeHistory.push(stroke.id);
+  };
+
   this.getStrokeById = function(id){
     return strokesById[id];
-  }
+  };
+
   this.draw = function(ctx){
     ctx.lineWidth = 2;
     ctx.strokeStyle = "black";
     this.setStyle(ctx);
-    for(var i = 0; i < this.contents.length; ++i){
-      var component = this.contents[i];
+    for(var i = 0; i < this.strokes.length; ++i){
+      var component = this.strokes[i];
       component.draw(ctx);
     }
-  }
+  };
+
+  this.undo = function() {
+    var lastStroke = this.strokeHistory.pop();
+    this.strokes.pop();
+    delete strokesById[lastStroke.id];
+  };
+
   this.setStyle = function(ctx){
     if(this.style != null){
       if(this.style.strokeWidth)
         ctx.lineWidth = this.style.strokeWidth;
       if(this.style.stroke)
         ctx.strokeStyle = this.style.stroke.toString();
+    }
+  };
+
+  this.print = function() {
+    for (var i = 0; i < this.strokes.length; ++i) {
+      var stroke = this.strokes[i];
+      stroke.print();
     }
   }
 }
@@ -303,6 +359,10 @@ Stroke = function(){
 	this.points = [];
 	this.id = getUUID();
   this.drawFrom = 0;
+
+  this.print = function() {
+    console.log(this.id + "\n");
+  }
 
 	var interpretations = [];
 	var boundingBox = new BoundingBox();
@@ -352,7 +412,7 @@ Stroke = function(){
 		}
 	}
 
-	this.draw = function(ctx) {
+	this.continueDraw = function(ctx) {
 		ctx.beginPath();
 		for(var j = this.drawFrom; j < this.points.length; ++j){
 			var point = this.points[j];
@@ -365,6 +425,20 @@ Stroke = function(){
 		this.setStyle(ctx);
 		ctx.stroke();
 	}
+
+  this.draw = function(ctx) {
+    ctx.beginPath();
+    for(var j = 0; j < this.points.length; ++j){
+      var point = this.points[j];
+      if(j == 0)
+        ctx.moveTo(point.x,point.y);
+      else
+        ctx.lineTo(point.x,point.y);
+    }
+    this.drawFrom = this.points.length - 1;
+    this.setStyle(ctx);
+    ctx.stroke();
+  }
 }
 
 /******************************************
@@ -394,7 +468,7 @@ BoundingBox = function(){
     this.cy = 0;
     this.width = 0;
     this.height = 0;
-  }
+  };
 
 	this.addPoint = function(pt) {
 		minX = Math.min(pt.x, minX);
@@ -402,17 +476,17 @@ BoundingBox = function(){
 		minY = Math.min(pt.y, minY);
 		maxY = Math.max(pt.y, maxY);
 		this.recalculate();
-	}
+	};
 
 	this.recalculate = function(){
 		this.x = minX;
 		this.width = maxX - minX;
 		this.y = minY;
 		this.height = maxY - minY;
-		this.cx = minX+ this.width/2;
-		this.cy = minY+ this.height/2;
-	}
-}
+		this.cx = minX + this.width/2;
+		this.cy = minY + this.height/2;
+	};
+};
 
 /******************************************
  * S T Y L E   A N D   C O L O R
