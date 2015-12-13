@@ -97,7 +97,7 @@ SketchEditor = function(el, options) {
 	}
 
 	// Clear the current  sketch.
-	this.clear = function(){
+	this.clear = function() {
 		sketch = new Code(1);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
@@ -116,16 +116,19 @@ SketchEditor = function(el, options) {
 
 	// Draw functions
 	var interval;
-	this.newThingsAddedForDrawing = function(){
+	this.newThingsAddedForDrawing = function() {
 		newThingsToBeDrawn = true;
 		//draw();
 	};
+
 	this.start = function(){
 		interval = setInterval(draw, 50);
 	};
+
 	this.stop = function() {
 		clearInterval(interval);
 	};
+
 	var draw = function(){
 		if(newThingsToBeDrawn){
 			ctx.save();
@@ -266,7 +269,7 @@ Code = function(numLines) {
       var component = this.lines[i];
       component.draw(ctx);
     }
-  }
+  };
 
   this.setStyle = function(ctx){
     if(this.style != null){
@@ -275,16 +278,16 @@ Code = function(numLines) {
       if(this.style.stroke)
         ctx.strokeStyle = this.style.stroke.toString();
     }
-  }
+  };
 
   this.print = function() {
-    console.log("Printing Stroke\n")
+    console.log("Printing Stroke\n");
     for (var i = 0; i < this.lines.length; ++i) {
       var line = this.lines[i];
       line.print();
     }
   }
-}
+};
 
 /******************************************
  * L I N E
@@ -335,7 +338,7 @@ Line = function() {
       stroke.print();
     }
   }
-}
+};
 
 
 /******************************************
@@ -349,7 +352,7 @@ Point = function(x, y, time) {
 	}
 	else
 		this.time = getTime();
-}
+};
 
 
 /******************************************
@@ -362,7 +365,7 @@ Stroke = function(){
 
   this.print = function() {
     console.log(this.id + "\n");
-  }
+  };
 
 	var interpretations = [];
 	var boundingBox = new BoundingBox();
@@ -370,7 +373,7 @@ Stroke = function(){
 	this.addPoint = function(pt) {
 		boundingBox.addPoint(pt);
 		this.points.push(pt);
-	}
+	};
 
 	this.copy = function(stroke) {
 		this.points = [];
@@ -381,26 +384,26 @@ Stroke = function(){
 			this.addPoint(new Point(otherPoint.x, otherPoint.y, otherPoint.time));
 		}
 		interpretations = stroke.getInterpretations();
-	}
+	};
 
 	this.setInterpretations = function(newInterpretations) {
 		interpretations = newInterpretations;
-	}
+	};
 
 	this.getInterpretations = function() {
 		 return interpretations;
-	}
+	};
 
 	this.getLabel = function() {
 		if(interpretations.length > 0)
 			return interpretations[0].label;
 		else
 			return "";
-	}
+	};
 
 	this.getBoundingBox = function() {
 		return boundingBox;
-	}
+	};
 
 	this.setStyle = function(ctx) {
 		if(this.style != null){
@@ -410,7 +413,7 @@ Stroke = function(){
 				ctx.strokeStyle = this.style.stroke.toString();
 			}
 		}
-	}
+	};
 
 	this.continueDraw = function(ctx) {
 		ctx.beginPath();
@@ -424,7 +427,7 @@ Stroke = function(){
     this.drawFrom = this.points.length - 1;
 		this.setStyle(ctx);
 		ctx.stroke();
-	}
+	};
 
   this.draw = function(ctx) {
     ctx.beginPath();
@@ -439,7 +442,7 @@ Stroke = function(){
     this.setStyle(ctx);
     ctx.stroke();
   }
-}
+};
 
 /******************************************
  * B O U N D I N G    B O X
@@ -495,7 +498,7 @@ Style = function(stroke, fill, strokeWidth){
   this.stroke = stroke;
   this.fill = fill;
   this.strokeWidth = strokeWidth;
-}
+};
 
 Color = function(red, green, blue){
   this.red = red;
@@ -504,4 +507,4 @@ Color = function(red, green, blue){
   this.toString = function(){
     return "rgb("+this.red+","+this.green+","+this.blue+")";
   }
-}
+};
