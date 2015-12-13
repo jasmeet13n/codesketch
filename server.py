@@ -11,8 +11,8 @@ class myHandler(BaseHTTPRequestHandler):
 
   #Handler for the POST requests
   def do_POST(self):
-    if self.path=="/":
-      print "in post method"
+    if self.path=="/test":
+      print "in post method, test"
       self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
       self.send_response(200)
@@ -21,7 +21,20 @@ class myHandler(BaseHTTPRequestHandler):
       data = json.loads(self.data_string)
       trainer = Trainer()
       self.wfile.write(trainer.testNetwork(data))
-      return      
+      return
+
+    if self.path=="/train":
+      print "in post method, train"
+      self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+
+      self.send_response(200)
+      self.end_headers()
+
+      data = json.loads(self.data_string)
+      trainer = Trainer()
+      trainer.addTrainingSetEntry(data, 'a') #change the target appropriately
+      return
+
       
       
 try:

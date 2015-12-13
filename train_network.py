@@ -15,11 +15,25 @@ class Trainer:
     featuresObject = Features(converted_json)
     featuresObject.processFeatures()
     input = featuresObject.getFeatures()
-    self.dataset.append([input, [ord(target)]])
+    #self.dataset.append([input, [ord(target)]])
+    outfile = open('training_data.csv', 'a')
+    outfile.write(','.join(map(str, input)))
+    outfile.write(',')
+    outfile.write(ord(target))
+    outfile.write('\n')
+    outfile.close()
 
   def trainNetwork(self):
-    trainingSet = SupervisedDataSet(2, 1);
-    for ri in range(0,5000):
+    tf = open('training_data.csv','r')
+
+    for line in tf.readlines():
+      data = [float(x) for x in line.strip().split(',') if x != '']
+      indata =  data[:-1]
+      outdata = int(data[-1])
+      self.dataset.append([indata,outdata])
+
+    trainingSet = SupervisedDataSet(len(self.dataset[0][0]), 1);
+    for ri in range(0,50000):
       input,target = dataset[random.randint(0,len(dataset) - 1)];
       trainingSet.addSample(input, target)
 
@@ -30,6 +44,7 @@ class Trainer:
                                   validationData=trainingSet,
                                   maxEpochs=10)
     NetworkWriter.writeToFile(net, 'trainedNet.xml')
+    tf.close()
 
   def testNetwork(self, data):
     converted_json = convertJsonToList(data)

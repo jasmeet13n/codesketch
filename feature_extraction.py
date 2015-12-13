@@ -15,7 +15,7 @@ class Features:
     self.downToUp = 0
     self.numStroke = 0
     self.totalStrokeLength = 0.0
-    self.curviness = 0
+    self.curviness = 0.0
     self.visualFeatures = []
 
   def getFeatures(self):
@@ -93,8 +93,6 @@ class Features:
       notFirst = True
     
     self.curviness = angleSum / self.totalStrokeLength
-
-    # calculate sharpness
 
   def resampleTheData(self):
     n = 0
