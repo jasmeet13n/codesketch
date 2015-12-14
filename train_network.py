@@ -60,10 +60,12 @@ class Trainer:
 
     for stroke in data:
       theStroke = []
-      for points in stroke.values():
-        for point in points:
-          for val in point.values():
-            theStroke.append(val)
+      for points in stroke['points']:
+        thePoints = []
+        thePoints.append(points['x'])
+        thePoints.append(points['y'])
+        thePoints.append(points['time'])
+        theStroke.append(thePoints)
       final_out.append(theStroke)
 
     return final_out
