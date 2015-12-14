@@ -20,7 +20,7 @@ class Features:
 
   def getFeatures(self):
     ret = []
-    # 25 values for visual matrix
+    # 256 values for visual matrix
     for val in self.visualFeatures:
       ret.append(val)
     # direction changes
@@ -119,23 +119,23 @@ class Features:
           temp = temp - 1
 
   def calculateVisualFeatures(self):
-    Matrix = [[0 for x in range(5)] for x in range(5)]
-    xCellLength = (self.xMax - self.xMin) / 5.0
-    yCellLength = (self.yMax - self.yMin) / 5.0
+    Matrix = [[0 for x in range(16)] for x in range(16)]
+    xCellLength = (self.xMax - self.xMin) / 16.0
+    yCellLength = (self.yMax - self.yMin) / 16.0
     for row in self.resampledData:
       x = 0
       y = 0
       if row[0] == self.xMin:
         x = 0
       elif row[0] == self.xMax:
-        x = 4
+        x = 15
       else:
         x = math.floor(row[0] / xCellLength)
 
       if row[1] == self.yMin:
         y = 0
       elif row[1] == self.yMax:
-        y = 4
+        y = 15
       else:
         y = math.floor(row[1] / yCellLength)
 
