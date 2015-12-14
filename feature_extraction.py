@@ -1,4 +1,7 @@
 import math
+from PIL import Image, ImageDraw
+import numpy
+
 
 class Features:
   def __init__(self, data):
@@ -59,6 +62,9 @@ class Features:
     currentLeftRight = 0 # 0 for going left, 1 for going right
     currentUpDown = 0 # 0 for going up, 1 for going down
     
+    self.xMax = self.xMin = self.resampledData[0][0]
+    self.yMax = self.yMin = self.resampledData[0][1]
+
     for row in self.resampledData:
       if self.xMax < row[0]:
         self.xMax = row[0]
@@ -107,39 +113,37 @@ class Features:
       n = length / 32
     temp = n - 1
     first = True
-    resampledData.append((self.data[0])[0])
+    self.resampledData.append((self.data[0])[0])
     for stroke in self.data:
       for row in stroke:
         if first:
+          first = False
           continue
         if(temp == 0):
-          resampledData.append(row)
+          self.resampledData.append(row)
           temp = n - 1
         else:
           temp = temp - 1
 
   def calculateVisualFeatures(self):
     Matrix = [[0 for x in range(16)] for x in range(16)]
-    xCellLength = (self.xMax - self.xMin) / 16.0
-    yCellLength = (self.yMax - self.yMin) / 16.0
+    img = Image.new('RGB', (xMax - xMin + 1, yMax - yMin + 1), "black")
+    draw = ImageDraw.Draw(img)
+    idx = 0
     for row in self.resampledData:
-      x = 0
-      y = 0
-      if row[0] == self.xMin:
-        x = 0
-      elif row[0] == self.xMax:
-        x = 15
-      else:
-        x = math.floor(row[0] / xCellLength)
+      if idx == len(self.resampledData) - 1 or idx == 0:
+        idx = idx + 1
+        continue
+      prev = self.resampledData[idx - 1]
+      draw.line([(prev[0] - xMin, prev[1] - yMin), (row[0] - xMin, row[1] - yMin)], fill="white")
+      idx = idx + 1
+    img_new = img.resize( ( 16, 16 ), Image.BICUBIC)
+    d = numpy.asarray(img_new.convert('L'))
 
-      if row[1] == self.yMin:
-        y = 0
-      elif row[1] == self.yMax:
-        y = 15
-      else:
-        y = math.floor(row[1] / yCellLength)
-
-      Matrix[x][y] = 1
+    for i in range(16):
+      for j in range(16):
+        if(d[i][j] != 0):
+          Matrix[i][j] = 1
 
     for row in Matrix:
       for val in row:
@@ -148,5 +152,5 @@ class Features:
   def processFeatures(self):
     calculateTotalStrokeLength()
     resampleTheData()
-    calculateVisualFeatures()
     calculateNonVisualFeatures()
+    calculateVisualFeatures()
