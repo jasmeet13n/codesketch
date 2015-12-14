@@ -58,42 +58,89 @@ SketchEditor = function(el, options) {
 
   var onStrokeListener = function() {};
 
+  var downFunction;
+  var moveFunction;
+  var upFunction;
+
+  downFunction = function(x, y) {
+  	// console.log("In down function " + x + ", " + y);
+    currentStroke = new Stroke();
+    currentStroke.style = new Style();
+    currentStroke.style.stroke = new Color(100, 0, 200);
+    currentStroke.style.strokeWidth = 3;
+    currentStroke.addPoint(new Point(x, y));
+    editor.newThingsAddedForDrawing();
+  };
+
+  moveFunction = function(x, y) {
+  	// console.log("In move function " + x + ", " + y);
+    if (currentStroke != null) {
+      currentStroke.addPoint(new Point(x, y));
+      editor.newThingsAddedForDrawing();
+    }
+  };
+
+  upFunction = function(x, y) {
+  	// console.log("In up function " + x + ", " + y);
+    if (currentStroke != null) {
+      currentStroke.addPoint(new Point(x, y));
+      sketch.addStroke(currentStroke);
+      //onStrokeListener(currentStroke);
+      editor.newThingsAddedForDrawing();
+      currentStroke = null;
+    } 	
+  };
+
   // Mouse Listeners (@jasmeet13n add touch listeners)
   var setMouseListeners;
   setMouseListeners = function () {
-    // Mouse down event listener.
+  	var started = false;
     $(canvas).mousedown(function (e) {
-      currentStroke = new Stroke();
-      currentStroke.style = new Style();
-      currentStroke.style.stroke = new Color(100, 0, 200);
-      currentStroke.style.strokeWidth = 3;
-      currentStroke.addPoint(new Point(e.offsetX, e.offsetY));
-      editor.newThingsAddedForDrawing();
+    	started = true;
+    	downFunction(e.offsetX, e.offsetY)
     });
-
-    // Mouse move event listener.
     $(canvas).mousemove(function (e) {
-      if (currentStroke != null) {
-        currentStroke.addPoint(new Point(e.offsetX, e.offsetY));
-        editor.newThingsAddedForDrawing();
-      }
+    	if (started == false) {
+    		return;
+    	}
+    	moveFunction(e.offsetX, e.offsetY);
     });
-
-    // Mouse up event listener.
     $(canvas).mouseup(function (e) {
-      if (currentStroke != null) {
-        currentStroke.addPoint(new Point(e.offsetX, e.offsetY));
-        sketch.addStroke(currentStroke);
-        //onStrokeListener(currentStroke);
-        editor.newThingsAddedForDrawing();
-        currentStroke = null;
-      }
+    	started = false;
+    	upFunction(e.offsetX, e.offsetY);
     });
+  };
+
+  var setTouchListeners;
+  setTouchListeners = function () {
+  	var rect = canvas.getBoundingClientRect();
+  	var started = false;
+ 	canvas.addEventListener('touchstart', function (e) {
+ 		started = true;
+ 		if (e.target == canvas) {e.preventDefault();}
+ 		var touchObj = e.touches[0];
+ 		downFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+ 	}, false);
+	canvas.addEventListener('touchmove', function (e) {
+		if (e.target == canvas) {e.preventDefault();}
+		if (started == false) {
+			return;
+		}
+ 		var touchObj = e.touches[0];
+ 		moveFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+	}, false);
+	canvas.addEventListener('touchend', function (e) {
+		started = false;
+ 		if (e.target == canvas) {e.preventDefault();}
+ 		var touchObj = e.changedTouches[0];
+ 		upFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+	}, false);
   };
 
   // Enable mouse listeners if config says so.
   if(config.enabled){
     setMouseListeners();
+    setTouchListeners();
   }
 
   // Clear the current  sketch.
