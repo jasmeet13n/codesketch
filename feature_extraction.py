@@ -49,7 +49,7 @@ class Features:
     for stroke in self.data:
       for row in stroke:
         if notFirst:
-          self.totalStrokeLength = self.totalStrokeLength + math.sqrt((row[0] - xLast)^2 + (row[1] - yLast)^2)
+          self.totalStrokeLength = self.totalStrokeLength + math.sqrt((row[0] - xLast)**2 + (row[1] - yLast)**2)
         xLast = row[0]
         yLast = row[1]
         notFirst = True
@@ -61,6 +61,10 @@ class Features:
     angleSum = 0
     currentLeftRight = 0 # 0 for going left, 1 for going right
     currentUpDown = 0 # 0 for going up, 1 for going down
+    if(self.resampledData[0][0] > self.resampledData[1][0]):
+      currentLeftRight = 1
+    if(self.resampledData[0][1] > self.resampledData[1][1]):
+      currentUpDown = 1
     
     self.xMax = self.xMin = self.resampledData[0][0]
     self.yMax = self.yMin = self.resampledData[0][1]
@@ -87,10 +91,10 @@ class Features:
           self.rightToLeft = self.rightToLeft + 1
           currentLeftRight = 0
         
-        if currentUpDown == 0 and row[1] < yLast:
+        if currentUpDown == 0 and row[1] > yLast:
           self.upToDown = self.upToDown + 1
           currentUpDown = 1
-        elif currentUpDown == 1 and row[1] > yLast:
+        elif currentUpDown == 1 and row[1] < yLast:
           self.downToUp = self.downToUp + 1
           currentUpDown = 0
 
@@ -127,7 +131,7 @@ class Features:
 
   def calculateVisualFeatures(self):
     Matrix = [[0 for x in range(16)] for x in range(16)]
-    img = Image.new('RGB', (xMax - xMin + 1, yMax - yMin + 1), "black")
+    img = Image.new('RGB', (self.xMax - self.xMin + 1, self.yMax - self.yMin + 1), "black")
     draw = ImageDraw.Draw(img)
     idx = 0
     for row in self.resampledData:
@@ -135,7 +139,7 @@ class Features:
         idx = idx + 1
         continue
       prev = self.resampledData[idx - 1]
-      draw.line([(prev[0] - xMin, prev[1] - yMin), (row[0] - xMin, row[1] - yMin)], fill="white")
+      draw.line([(prev[0] - self.xMin, prev[1] - self.yMin), (row[0] - self.xMin, row[1] - self.yMin)], fill="white")
       idx = idx + 1
     img_new = img.resize( ( 16, 16 ), Image.BICUBIC)
     d = numpy.asarray(img_new.convert('L'))
@@ -150,7 +154,7 @@ class Features:
         self.visualFeatures.append(val)
 
   def processFeatures(self):
-    calculateTotalStrokeLength()
-    resampleTheData()
-    calculateNonVisualFeatures()
-    calculateVisualFeatures()
+    self.calculateTotalStrokeLength()
+    self.resampleTheData()
+    self.calculateNonVisualFeatures()
+    self.calculateVisualFeatures()
