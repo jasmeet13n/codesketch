@@ -47,10 +47,12 @@ SketchEditor = function(el, options) {
   var rootElement = el;
 
   $(el).append('<div><canvas class="sketch-canvas" width="' + config.width + 'px" height="' + config.height + 'px"></canvas></div>');
+  $("#result-panel").html("");
 
   var canvas = $(".sketch-canvas",rootElement)[0];
   var ctx = canvas.getContext("2d");
   canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false; }, false);
+
   var sketch = new Code(50);
 
   var currentStroke = null;
@@ -145,7 +147,8 @@ SketchEditor = function(el, options) {
 
   // Clear the current  sketch.
   this.clear = function() {
-    sketch = new Code(1);
+    $("#result-panel").html("");
+    sketch = new Code(50);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
     currentStroke = null;
