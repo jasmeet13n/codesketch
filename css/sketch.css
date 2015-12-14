@@ -16,12 +16,29 @@
 
 #result-panel{
 	float:left;
+    width:500px;
+    height: 1000px;
+    border: 2px solid;
 	margin-left:10px;
-	margin-top: 40px;
+	margin-top: 37px;
 }
 
 .resultLine {
 	height: 20px;
+}
+
+.lineNumberText {
+    float: left;
+    width: 20px;
+    border-right: 1px solid;
+    border-bottom: 1px dashed;
+}
+
+.lineText {
+    float: left;
+    width:450px;
+    height: 18px;
+    border-bottom: 1px dashed;
 }
 
 canvas{

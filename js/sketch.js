@@ -51,7 +51,7 @@ SketchEditor = function(el, options) {
   var canvas = $(".sketch-canvas",rootElement)[0];
   var ctx = canvas.getContext("2d");
   canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false; }, false);
-  var sketch = new Code(1);
+  var sketch = new Code(50);
 
   var currentStroke = null;
   var newThingsToBeDrawn = true;
@@ -265,7 +265,9 @@ Code = function(numLines) {
       this.lines.push(new Line());
       var curLineNumber = this.lines.length - 1;
       this.lines[curLineNumber].lineNumber = curLineNumber;
-      $("#result-panel").append("<div id='lineNumber" + curLineNumber + "' class='resultLine' ></div>");
+      $("#result-panel").append("<div id='lineNumber" + curLineNumber + "' class='resultLine' >" +
+        "<span class='lineNumberText'>" + (curLineNumber + 1) + "</span>" +
+        "<span class='lineText'></span></div>");
     }
   };
   this.increaseLinesLengthTo = function(expectedNumLines) {
@@ -453,12 +455,10 @@ Line = function() {
       }
       i -= (this.strokes[i].mergedWith + 1);
     }
-    result.push("| ");
-    result.push(this.lineNumber + 1);
 
     result.reverse();
 
-    var selector = "#result-panel #lineNumber" + this.lineNumber;
+    var selector = "#lineNumber" + this.lineNumber + " span.lineText";
     $(selector).html(result.join(""));
   };
 
