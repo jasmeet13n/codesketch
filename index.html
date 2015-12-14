@@ -8,14 +8,9 @@
 
   <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui.js"></script>
-  <script type="text/javascript" src="js/handlebars.js"></script>
-  <script type="text/javascript" src="js/messaging.js"></script>
-  <script type="text/javascript" src="js/messages.js"></script>
   <script type="text/javascript" src="js/sketch.js"></script>
   <script type="text/javascript" src="js/paleodemo.js"></script>
-
 </head>
-
 <body>
   <div id="sketch-panel">
     <div>
@@ -28,61 +23,7 @@
     <div id='sketch'>
     </div>
   </div>
-  <div id='paleo-options'>
-  </div>
-  <div id='recognition-result'>
-    <div> Recognition Result </div>
-    <div id='stroke-holder'>
-    </div>
-    <div id="feedback-buttons">
-      <button class='recognition-button incorrect'>Incorrect</button>
-      <button class='recognition-button correct'>Correct</button>
-    </div>
-    <div id="feedback-thanks" style="display:none;text-align:center">
-      Thank you for your feedback.
-    </div>
-  </div>
-  <div id='dialog' style="display:none">
+  <div id="result-panel">
   </div>
 </body>
-
-<script id="select-multi-template" type="text/x-handlebars-template">
-  <div>{{name}}</div>
-  <div class="select">
-    {{#each options}}
-    <div class="option" value="{{this}}">{{this}}</div>
-    {{/each}}
-  </div>
-</script>
-<script id="paleo-error-template" type="text/x-handlebars-template">
-  <div>
-    <table align="center">
-      <tr>
-        <td colspan="2" align="center">
-          <div id="confirm-stroke-holder" style="margin: 0 auto;"></div>
-        </td>
-      </tr>
-      <tr>
-        <td valign="top" align="right">
-          <label for="correct-label">Correct Label: </label>
-        </td>
-        <td>
-          <select id="correct-label" name="correct-label">
-            {{#each activeConfiguration}}
-            <option value="{{this}}">{{this}}</option>
-            {{/each}}
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td valign="top" align="right">
-          <label for="error-description">Description of the error: </label>
-        </td>
-        <td>
-          <textarea name="error-description" id="error-description" cols="40" rows="6"></textarea>
-        </td>
-      </tr>
-    </table>
-  </div>
-</script>
 </html>

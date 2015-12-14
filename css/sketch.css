@@ -1,70 +1,29 @@
 .ui-widget{
 	font-size:12px;
 }
+
 .sketch-canvas {
 	border:2px solid black;
 }
-#sketch{
-}
+
 #sketch-panel{
 	float:left;
-
 }
+
 #controls{
 	float:right;
 }
-#paleo-options{
-	float:left;
-	margin-left:20px;
-}
 
-.select{
-	width:200px;
-	border:2px inset grey;
-}
-.option{
-	padding:4px;
-	background-color:#dddddd;
-	cursor:pointer;
-	user-select:none;
-}
-
-.option:hover{
-	background-color:#9999dd;
-}
-.option.selected{
-	background-color:#9999ff;
-}
-.option.selected:hover{
-	background-color:#eeeeee;
-}
-
-#recognition-result{
-	display:none;
+#result-panel{
 	float:left;
 	margin-left:10px;
-}
-.recognition-button{
-	font-size:12px;
+	margin-top: 40px;
 }
 
-.recognition-button.incorrect{
-	background: #E37878  50% 50% repeat-x;
-	color: black;
+.resultLine {
+	height: 20px;
 }
-.recognition-button.incorrect:hover{
-	background: #E6AAAA  50% 50% repeat-x;
-	color: #111;
-}
-.recognition-button.correct{
-	float:right;
-	background: #69D16C  50% 50% repeat-x;
-	color: black;
-}
-.recognition-button.correct:hover{
-	background: #A1D1A3  50% 50% repeat-x;
-	color: #111;
-}
+
 canvas{
 	background-color:white;
 	margin:10px;

@@ -216,6 +216,9 @@ Code = function(numLines) {
   this.addLines = function(numLinesToAdd) {
     for (var i = 0; i < numLinesToAdd; ++i) {
       this.lines.push(new Line());
+      var curLineNumber = this.lines.length - 1;
+      this.lines[curLineNumber].lineNumber = curLineNumber;
+      $("#result-panel").append("<div id='lineNumber" + curLineNumber + "' class='resultLine' ></div>");
     }
   };
   this.increaseLinesLengthTo = function(expectedNumLines) {
@@ -295,6 +298,7 @@ Code = function(numLines) {
  * L I N E
  ******************************************/
 Line = function() {
+  this.lineNumber = -1;
   this.strokeHistory = [];
   this.strokes = [];
   this.mergedStrokes = [];
@@ -380,8 +384,35 @@ Line = function() {
 
     // make merged stroke to json object
     var json = JSON.stringify(multiStroke);
-    console.log(json);
 
+    // get interpretation
+
+    // print line to text area
+    var result = [];
+    for (var i = this.strokes.length - 1; i >= 0; ) {
+      result.push("A");
+
+      var left = 0;
+      if (i > 0) {
+        var bbLeft = this.strokes[i - 1].getBoundingBox();
+        left = bbLeft.x + bbLeft.width;
+      }
+      var right;
+      var bbRight = this.strokes[i].getBoundingBox();
+      right = bbRight.x;
+      var num = Math.floor((right - left)/30);
+      for (var j = 0; j < num; ++j) {
+        result.push("&nbsp;");
+      }
+      i -= (this.strokes[i].mergedWith + 1);
+    }
+    result.push("| ");
+    result.push(this.lineNumber + 1);
+
+    result.reverse();
+
+    var selector = "#result-panel #lineNumber" + this.lineNumber;
+    $(selector).html(result.join(""));
   };
 
   this.getStrokeById = function(id){
@@ -450,7 +481,7 @@ Stroke = function(){
     console.log(this.id + "\n");
   };
 
-  var interpretations = [];
+  this.interpretations = [];
   var boundingBox = new BoundingBox();
 
   this.addPoint = function(pt) {
