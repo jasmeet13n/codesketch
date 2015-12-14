@@ -8,7 +8,7 @@ $(document).ready(function(){
 	});
 
 	var sketchEditor = new SketchEditor($("#sketch"),{
-		width:600,
+		width:650,
 		height:1000
 	});
 	sketchEditor.start();

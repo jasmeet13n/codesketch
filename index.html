@@ -1,9 +1,10 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <title>Code Sketch</title>
 
   <link rel="stylesheet" rev="stylesheet"  href="css/jquery-ui-1.8.22.custom.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
   <link rel="stylesheet" rev="stylesheet" href="css/sketch.css">
 
   <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
@@ -12,18 +13,29 @@
   <script type="text/javascript" src="js/paleodemo.js"></script>
 </head>
 <body>
-  <div id="sketch-panel">
-    <div>
-      <span>Code Sketch</span>
-      <span id="controls">
-        <button id="undo-button">Undo</button>
-        <button id="clear-button">Clear</button>
-      </span>
+  <div class="container-fluid">
+    <div class="row">
+      <div id="top-panel">
+        <h2 class="col-md-3">Code Sketch</h2>
+        <div id="controls" class="col-md-4">
+          <button type="button" id="code-switch" class="btn btn-success">Code</button>
+          <button type="button" id="comment-switch" class="btn btn-info">Comment</button>
+          <button type="button" id="undo-button" class="btn btn-primary">Undo</button>
+          <button type="button" id="clear-button" clsas="btn btn-warning">Clear</button>
+        </div>
+      </div>
     </div>
-    <div id='sketch'>
+    <div class="row">
+      <div id="sketch-panel" class="col-md-7">
+        <div id='sketch'>
+
+        </div>
+      </div>
+      <div id="result-panel" class="col-md-5">
+
+      </div>
     </div>
-  </div>
-  <div id="result-panel">
-  </div>
+
+    </div>
 </body>
 </html>
