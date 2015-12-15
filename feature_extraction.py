@@ -32,8 +32,15 @@ class Features:
     # ret.append(self.upToDown)
     # ret.append(self.downToUp)
     #total stroke length / height && stroke length / width
-    ret.append(float(self.totalStrokeLength) / float(self.yMax - self.yMin))
-    ret.append(float(self.totalStrokeLength) / float(self.xMax - self.xMin))
+    if self.yMax - self.yMin != 0:
+      ret.append(float(self.totalStrokeLength) / float(self.yMax - self.yMin))
+    else:
+      ret.append(0.0)
+
+    if self.xMax - self.xMin != 0:
+      ret.append(float(self.totalStrokeLength) / float(self.xMax - self.xMin))
+    else:
+      ret.append(0.0)
     # height/width
     ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
     # curviness
@@ -87,19 +94,19 @@ class Features:
       #   if adjSide != 0:
       #     angleSum = angleSum + math.fabs(math.atan(oppSide/adjSide))
         
-      #   if currentLeftRight == 0 and row[0] > xLast:
-      #     self.leftToRight = self.leftToRight + 1
-      #     currentLeftRight = 1
-      #   elif currentLeftRight == 1 and row[0] < xLast:
-      #     self.rightToLeft = self.rightToLeft + 1
-      #     currentLeftRight = 0
+        # if currentLeftRight == 0 and row[0] > xLast:
+        #   self.leftToRight = self.leftToRight + 1
+        #   currentLeftRight = 1
+        # elif currentLeftRight == 1 and row[0] < xLast:
+        #   self.rightToLeft = self.rightToLeft + 1
+        #   currentLeftRight = 0
         
-      #   if currentUpDown == 0 and row[1] > yLast:
-      #     self.upToDown = self.upToDown + 1
-      #     currentUpDown = 1
-      #   elif currentUpDown == 1 and row[1] < yLast:
-      #     self.downToUp = self.downToUp + 1
-      #     currentUpDown = 0
+        # if currentUpDown == 0 and row[1] > yLast:
+        #   self.upToDown = self.upToDown + 1
+        #   currentUpDown = 1
+        # elif currentUpDown == 1 and row[1] < yLast:
+        #   self.downToUp = self.downToUp + 1
+        #   currentUpDown = 0
 
       xLast = row[0]
       yLast = row[1]
