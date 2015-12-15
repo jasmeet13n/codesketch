@@ -28,11 +28,33 @@ $(document).ready(function(){
 		recognizeRequest.send();
 	});
 
-  $("#undo-button").button().click(function(){
+  $("#undo-button").click(function(){
     sketchEditor.undo();
   });
 
-	$("#clear-button").button().click(function(){
+	$("#clear-button").click(function(){
     sketchEditor.clear();
+  });
+
+	$("#code-switch").click(function(){
+    if ($("#code-switch").hasClass("btn-success")) {
+      return;
+    }
+    $("#code-switch").toggleClass("btn-success");
+    $("#code-switch").toggleClass("btn-default");
+    sketchEditor.changeContextTo(0);
+    $("#comment-switch").toggleClass("btn-default");
+    $("#comment-switch").toggleClass("btn-success");
+  });
+
+  $("#comment-switch").click(function(){
+    if ($("#comment-switch").hasClass("btn-success")) {
+      return;
+    }
+    $("#comment-switch").toggleClass("btn-default");
+    $("#comment-switch").toggleClass("btn-success");
+    sketchEditor.changeContextTo(1);
+    $("#code-switch").toggleClass("btn-success");
+    $("#code-switch").toggleClass("btn-default");
   });
 });

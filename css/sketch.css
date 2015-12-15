@@ -12,27 +12,28 @@
 #top-panel {
 }
 
-#controls{
+.controls{
     margin-top:18px;
 }
 
 #result-panel{
-    border: 2px solid;
+    /*border: 2px solid;*/
 }
 
 .resultLine {
-	height: 20px;
+	/*height: 20px;*/
 }
 
 .lineNumberText {
-    width: 20px;
-    border-right: 1px solid;
-    border-bottom: 1px dashed;
+    width:25px;
 }
 
 .lineText {
-    height: 18px;
-    border-bottom: 1px dashed;
+}
+
+code {
+    color: darkgreen;
+    background-color: #f0ffeb;
 }
 
 canvas{
