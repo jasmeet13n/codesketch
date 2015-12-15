@@ -42,7 +42,10 @@ class Features:
     else:
       ret.append(0.0)
     # height/width
-    ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
+    if(self.xMax - self.xMin != 0):
+      ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
+    else:
+      ret.append(100.0)
     # curviness
     # ret.append(self.curviness)
     # numStroke
