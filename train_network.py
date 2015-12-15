@@ -22,6 +22,10 @@ class Trainer:
       self.clf = pickle.load(open('clf.pkl', "rb"))
 
   def addTrainingSetEntry(self, data, target, convert):
+    # out_file = open('characters','a')
+    # out_file.write(target)
+    # out_file.write('\n')
+    # out_file.close()
     if convert:
       data = convertJsonToList(data)
     featuresObject = Features(data)
