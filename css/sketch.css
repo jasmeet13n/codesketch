@@ -7,24 +7,35 @@
 }
 
 #sketch-panel{
-	float:left;
 }
 
-#controls{
-	float:right;
+#top-panel {
+}
+
+.controls{
+    margin-top:18px;
 }
 
 #result-panel{
-	float:left;
-	margin-left:10px;
-	margin-top: 40px;
+    /*border: 2px solid;*/
 }
 
 .resultLine {
-	height: 20px;
+	/*height: 20px;*/
+}
+
+.lineNumberText {
+    width:25px;
+}
+
+.lineText {
+}
+
+code {
+    color: darkgreen;
+    background-color: #f0ffeb;
 }
 
 canvas{
 	background-color:white;
-	margin:10px;
 }
