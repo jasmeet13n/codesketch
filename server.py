@@ -4,6 +4,7 @@ from os import curdir, sep
 import cgi
 import json
 from train_network import Trainer
+import urlparse
 
 PORT_NUMBER = 8080
 
@@ -11,11 +12,11 @@ trainer = Trainer()
 
 class myHandler(BaseHTTPRequestHandler):
 
-
+  result = urlparse.urlparse(self.path)
   #Handler for the POST requests
   def do_POST(self):
     global trainer
-    if self.path=="/test":
+    if result.path=="/test":
       print "in post method, test"
       self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
@@ -32,7 +33,7 @@ class myHandler(BaseHTTPRequestHandler):
       self.wfile.write(ans)
       return
 
-    if self.path=="/train":
+    if result.path=="/train":
       print "in post method, train"
       self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
@@ -41,7 +42,7 @@ class myHandler(BaseHTTPRequestHandler):
 
       data = json.loads(self.data_string)
       trainer = Trainer()
-      trainer.addTrainingSetEntry(data, 'a') #change the target appropriately
+      trainer.addTrainingSetEntry(data, result.query, True) #change the target appropriately
       return
 
       

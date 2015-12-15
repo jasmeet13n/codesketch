@@ -21,7 +21,9 @@ class Trainer:
     if os.path.exists('clf.pkl'):
       self.clf = pickle.load(open('clf.pkl', "rb"))
 
-  def addTrainingSetEntry(self, data, target):
+  def addTrainingSetEntry(self, data, target, convert):
+    if convert:
+      data = convertJsonToList(data)
     featuresObject = Features(data)
     featuresObject.processFeatures()
     input = featuresObject.getFeatures()

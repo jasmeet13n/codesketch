@@ -17,7 +17,7 @@ if __name__ == '__main__':
     if ".SEGMENT" in lines[i]:
       if len(points) > 0:
         if currCharacter[0] < 'A' or currCharacter[0] > 'Z':
-          trainer.addTrainingSetEntry([points], currCharacter)
+          trainer.addTrainingSetEntry([points], currCharacter, False)
       currCharacter = line.strip().split(' ')[-1].strip('"')
       points = []
       # curClass = 
@@ -28,5 +28,5 @@ if __name__ == '__main__':
       data = [int(x) for x in line.strip().split(' ') if x != '']
       points.append(data)
     i += 1
-  trainer.addTrainingSetEntry([points], currCharacter)
+  trainer.addTrainingSetEntry([points], currCharacter, False)
   trainer.trainNetwork()
