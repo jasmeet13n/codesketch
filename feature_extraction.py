@@ -27,16 +27,16 @@ class Features:
     for val in self.visualFeatures:
       ret.append(val)
     # direction changes
-    ret.append(self.leftToRight)
-    ret.append(self.rightToLeft)
-    ret.append(self.upToDown)
-    ret.append(self.downToUp)
+    # ret.append(self.leftToRight)
+    # ret.append(self.rightToLeft)
+    # ret.append(self.upToDown)
+    # ret.append(self.downToUp)
     # height/width
-    ret.append((self.yMax - self.yMin) / (self.xMax - self.xMin))
+    # ret.append((self.yMax - self.yMin) / (self.xMax - self.xMin))
     # curviness
-    ret.append(self.curviness)
+    # ret.append(self.curviness)
     # numStroke
-    ret.append(self.numStroke)
+    # ret.append(self.numStroke)
     return ret
 
   def calculateTotalStrokeLength(self):
@@ -58,13 +58,13 @@ class Features:
     xLast = 0
     yLast = 0
     notFirst = False
-    angleSum = 0
-    currentLeftRight = 0 # 0 for going left, 1 for going right
-    currentUpDown = 0 # 0 for going up, 1 for going down
-    if(self.resampledData[0][0] > self.resampledData[1][0]):
-      currentLeftRight = 1
-    if(self.resampledData[0][1] > self.resampledData[1][1]):
-      currentUpDown = 1
+    # angleSum = 0
+    # currentLeftRight = 0 # 0 for going left, 1 for going right
+    # currentUpDown = 0 # 0 for going up, 1 for going down
+    # if(self.resampledData[0][0] > self.resampledData[1][0]):
+    #   currentLeftRight = 1
+    # if(self.resampledData[0][1] > self.resampledData[1][1]):
+    #   currentUpDown = 1
     
     self.xMax = self.xMin = self.resampledData[0][0]
     self.yMax = self.yMin = self.resampledData[0][1]
@@ -78,56 +78,59 @@ class Features:
         self.yMax = row[1]
       if self.yMin > row[1]:
         self.yMin = row[1]
-      if notFirst:
-        oppSide = math.fabs(row[1] - yLast)
-        adjSide = math.fabs(row[0] - xLast)
-        if adjSide != 0:
-          angleSum = angleSum + math.fabs(math.atan(oppSide/adjSide))
+      # if notFirst:
+      #   oppSide = math.fabs(row[1] - yLast)
+      #   adjSide = math.fabs(row[0] - xLast)
+      #   if adjSide != 0:
+      #     angleSum = angleSum + math.fabs(math.atan(oppSide/adjSide))
         
-        if currentLeftRight == 0 and row[0] > xLast:
-          self.leftToRight = self.leftToRight + 1
-          currentLeftRight = 1
-        elif currentLeftRight == 1 and row[0] < xLast:
-          self.rightToLeft = self.rightToLeft + 1
-          currentLeftRight = 0
+      #   if currentLeftRight == 0 and row[0] > xLast:
+      #     self.leftToRight = self.leftToRight + 1
+      #     currentLeftRight = 1
+      #   elif currentLeftRight == 1 and row[0] < xLast:
+      #     self.rightToLeft = self.rightToLeft + 1
+      #     currentLeftRight = 0
         
-        if currentUpDown == 0 and row[1] > yLast:
-          self.upToDown = self.upToDown + 1
-          currentUpDown = 1
-        elif currentUpDown == 1 and row[1] < yLast:
-          self.downToUp = self.downToUp + 1
-          currentUpDown = 0
+      #   if currentUpDown == 0 and row[1] > yLast:
+      #     self.upToDown = self.upToDown + 1
+      #     currentUpDown = 1
+      #   elif currentUpDown == 1 and row[1] < yLast:
+      #     self.downToUp = self.downToUp + 1
+      #     currentUpDown = 0
 
       xLast = row[0]
       yLast = row[1]
       notFirst = True
     
-    self.curviness = angleSum / self.totalStrokeLength
+    # self.curviness = angleSum / self.totalStrokeLength
 
   def resampleTheData(self):
-    n = 0
-    length = 0
-    for stroke in self.data:
-      length = length + len(stroke)
-    if length > 128:
-      n = length / 128
-    elif length > 64:
-      n = length / 64
-    else:
-      n = length / 32
-    temp = n - 1
-    first = True
-    self.resampledData.append((self.data[0])[0])
+    # n = 0
+    # length = 0
+    # for stroke in self.data:
+    #   length = length + len(stroke)
+    # if length > 128:
+    #   n = length / 128
+    # elif length > 64:
+    #   n = length / 64
+    # else:
+    #   n = length / 32
+    # temp = n - 1
+    # first = True
+    # self.resampledData.append((self.data[0])[0])
+    # for stroke in self.data:
+    #   for row in stroke:
+    #     if first:
+    #       first = False
+    #       continue
+    #     if(temp == 0):
+    #       self.resampledData.append(row)
+    #       temp = n - 1
+    #     else:
+    #       temp = temp - 1
     for stroke in self.data:
       for row in stroke:
-        if first:
-          first = False
-          continue
-        if(temp == 0):
-          self.resampledData.append(row)
-          temp = n - 1
-        else:
-          temp = temp - 1
+        self.resampledData.append(row)
 
   def calculateVisualFeatures(self):
     Matrix = [[0 for x in range(16)] for x in range(16)]
@@ -154,7 +157,7 @@ class Features:
         self.visualFeatures.append(val)
 
   def processFeatures(self):
-    self.calculateTotalStrokeLength()
+    #self.calculateTotalStrokeLength()
     self.resampleTheData()
     self.calculateNonVisualFeatures()
     self.calculateVisualFeatures()
