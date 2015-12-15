@@ -12,10 +12,10 @@ trainer = Trainer()
 
 class myHandler(BaseHTTPRequestHandler):
 
-  result = urlparse.urlparse(self.path)
   #Handler for the POST requests
   def do_POST(self):
     global trainer
+    result = urlparse.urlparse(self.path)
     if result.path=="/test":
       print "in post method, test"
       self.data_string = self.rfile.read(int(self.headers['Content-Length']))
