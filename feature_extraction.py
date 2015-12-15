@@ -31,8 +31,11 @@ class Features:
     # ret.append(self.rightToLeft)
     # ret.append(self.upToDown)
     # ret.append(self.downToUp)
+    #total stroke length / height && stroke length / width
+    ret.append(float(self.totalStrokeLength) / float(self.yMax - self.yMin))
+    ret.append(float(self.totalStrokeLength) / float(self.xMax - self.xMin))
     # height/width
-    # ret.append((self.yMax - self.yMin) / (self.xMax - self.xMin))
+    ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
     # curviness
     # ret.append(self.curviness)
     # numStroke
@@ -157,7 +160,7 @@ class Features:
         self.visualFeatures.append(val)
 
   def processFeatures(self):
-    #self.calculateTotalStrokeLength()
+    self.calculateTotalStrokeLength()
     self.resampleTheData()
     self.calculateNonVisualFeatures()
     self.calculateVisualFeatures()
