@@ -36,17 +36,20 @@ class Trainer:
   def trainNetwork(self):
     tf = open('training_data.csv','r')
 
-    for line in tf.readlines():
-      data = [float(x) for x in line.strip().split(',') if x != '']
-      # indata =  data[:-1]
-      # outdata = int(data[-1])
-      # self.dataset.append([indata,outdata])
-      self.input_arr.append(data[:-1])
-      self.target.append(data[-1])
+    lines = tf.readlines()
+    for i in range(5):
+      for line in lines:
+        data = [float(x) for x in line.strip().split(',') if x != '']
+        # indata =  data[:-1]
+        # outdata = int(data[-1])
+        # self.dataset.append([indata,outdata])
+        self.input_arr.append(data[:-1])
+        self.target.append(data[-1])
 
     clf = KNeighborsClassifier()
     clf.fit(self.input_arr, self.target)
     pickle.dump(clf, open('clf.pkl', "wb"))
+    tf.close()
 
   # def trainNetwork(self):
   #   tf = open('training_data.csv','r')
