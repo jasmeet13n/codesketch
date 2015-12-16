@@ -110,6 +110,7 @@ SketchEditor = function(el, options) {
       }
       //onStrokeListener(currentStroke);
       editor.newThingsAddedForDrawing();
+      draw();
       currentStroke = null;
     } 	
   };
@@ -520,7 +521,7 @@ Line = function() {
 
     var ans = $.ajax({
       type: 'POST',
-      url: "http://10.202.136.29:8080/test",
+      url: "http://localhost:8000/test",
       data: jsonData,
       context: this,
       success: function(data, success) {

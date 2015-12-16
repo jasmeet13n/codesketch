@@ -512,7 +512,7 @@ Line = function() {
 
     var ans = $.ajax({
       type: 'POST',
-      url: "http://10.202.136.29:8080/test",
+      url: "http://10.202.136.29:8000/test",
       data: jsonData,
       context: this,
       success: function(data, success) {

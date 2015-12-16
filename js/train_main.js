@@ -38,7 +38,7 @@ $(document).ready(function(){
     if (e.which == 32) {
       e.preventDefault();
       var char = $("#char-value").val();
-      var myurl = "http://10.202.136.29:8080/train?char="+char;
+      var myurl = "http://10.202.136.29:8000/train?char="+char;
       var jsonData = JSON.stringify(sketchEditor.multiStroke);
       console.log(jsonData);
       var ans = $.ajax({
