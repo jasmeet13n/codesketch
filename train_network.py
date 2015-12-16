@@ -1,58 +1,66 @@
-from pybrain.datasets import SupervisedDataSet
-from pybrain.tools.customxml import NetworkWriter
-from pybrain.tools.customxml import NetworkReader
-from pybrain.tools.shortcuts import buildNetwork
-from pybrain.supervised.trainers import BackpropTrainer
+from sklearn.svm import SVC
+# from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from feature_extraction import Features
 import json
+import random
+import pickle
+import os
 
 class Trainer:
   def __init__(self):
-    self.dataset = []
+    # self.dataset = []
+    self.input_arr = []
+    self.target = []
+    self.clf = SVC(kernel='rbf')
+    #self.clf = KNeighborsClassifier()
+    # if os.path.exists('clf.pkl'):
+    #   self.clf = pickle.load(open('clf.pkl', "rb"))
 
-  def addTrainingSetEntry(self, data, target):
-    converted_json = convertJsonToList(data)
-    featuresObject = Features(converted_json)
+  def addTrainingSetEntry(self, data, target, convert):
+    if convert:
+      data = convertJsonToList(data)
+    featuresObject = Features(data)
     featuresObject.processFeatures()
     input = featuresObject.getFeatures()
-    #self.dataset.append([input, [ord(target)]])
     outfile = open('training_data.csv', 'a')
     outfile.write(','.join(map(str, input)))
     outfile.write(',')
-    outfile.write(ord(target))
+    outfile.write(str(ord(target)))
     outfile.write('\n')
     outfile.close()
 
   def trainNetwork(self):
     tf = open('training_data.csv','r')
 
-    for line in tf.readlines():
-      data = [float(x) for x in line.strip().split(',') if x != '']
-      indata =  data[:-1]
-      outdata = int(data[-1])
-      self.dataset.append([indata,outdata])
+    lines = tf.readlines()
+    for i in range(5):
+      for line in lines:
+        data = [float(x) for x in line.strip().split(',') if x != '']
+        self.input_arr.append(data[:-1])
+        self.target.append(data[-1])
 
-    trainingSet = SupervisedDataSet(len(self.dataset[0][0]), 1);
-    for ri in range(0,50000):
-      input,target = dataset[random.randint(0,len(dataset) - 1)];
-      trainingSet.addSample(input, target)
+    self.clf.fit(self.input_arr, self.target)
+    predicted = self.clf.predict(self.input_arr)
+    count = 0.0
+    for i in range(len(self.target)):
+      if predicted[i] == self.target[i]:
+        count += 1
 
-    net = buildNetwork(trainingSet.indim, 5, trainingSet.outdim, bias=True)
-    trainer = BackpropTrainer(self.net, trainingSet, learningrate = 0.001, momentum = 0.99)
-    trainer.trainUntilConvergence(verbose=True,
-                                  trainingData=trainingSet,
-                                  validationData=trainingSet,
-                                  maxEpochs=10)
-    NetworkWriter.writeToFile(net, 'trainedNet.xml')
+    print "Accuracy:", count/(len(self.target))
+    pickle.dump(self.clf, open('clf.pkl', "wb"))
     tf.close()
 
+  
+
   def testNetwork(self, data):
-    converted_json = convertJsonToList(data)
+    converted_json = self.convertJsonToList(data)
     featuresObject = Features(converted_json)
     featuresObject.processFeatures()
-    input = featuresObject.getFeatures()
-    net = NetworkReader.readFrom('trainedNet.xml')
-    return chr(int(round(net.activate(input))))
+    input_arr = featuresObject.getFeatures()
+    print "in testNetwork"
+    print input_arr
+    return chr(self.clf.predict(input_arr))
 
   def convertJsonToList(self, json_data):
     data = json.loads(json_data)
