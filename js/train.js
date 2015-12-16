@@ -1,3 +1,6 @@
+/**
+ * Created by jasmeet13n on 12/15/15.
+ */
 /* Sketch.js*/
 
 /* Global functions*/
@@ -7,12 +10,12 @@ getUUID = function () {
   S4 = function () {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
   };
-	return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+  return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 };
 
 var getTime;
 getTime = function () {
-	return new Date().getTime();
+  return new Date().getTime();
 };
 
 /******************************************
@@ -57,6 +60,7 @@ SketchEditor = function(el, options) {
   var sketch = new Code(30);
 
   var curContext = 0;
+  this.multiStroke = [];
 
   this.changeContextTo = function(selection) {
     if (selection == 0) {
@@ -68,6 +72,7 @@ SketchEditor = function(el, options) {
     }
   };
 
+
   var currentStroke = null;
   var newThingsToBeDrawn = true;
 
@@ -78,7 +83,7 @@ SketchEditor = function(el, options) {
   var upFunction;
 
   downFunction = function(x, y) {
-  	// console.log("In down function " + x + ", " + y);
+    // console.log("In down function " + x + ", " + y);
     currentStroke = new Stroke();
     currentStroke.style = new Style();
     if (curContext == 0) {
@@ -92,7 +97,7 @@ SketchEditor = function(el, options) {
   };
 
   moveFunction = function(x, y) {
-  	// console.log("In move function " + x + ", " + y);
+    // console.log("In move function " + x + ", " + y);
     if (currentStroke != null) {
       currentStroke.addPoint(new Point(x, y));
       editor.newThingsAddedForDrawing();
@@ -100,64 +105,61 @@ SketchEditor = function(el, options) {
   };
 
   upFunction = function(x, y) {
-  	// console.log("In up function " + x + ", " + y);
+    // console.log("In up function " + x + ", " + y);
     if (currentStroke != null) {
       currentStroke.addPoint(new Point(x, y));
-      if (curContext == 0) {
-        sketch.addStroke(currentStroke);
-      } else {
-        sketch.addComment(currentStroke);
-      }
+
+      editor.multiStroke.push(currentStroke);
       //onStrokeListener(currentStroke);
       editor.newThingsAddedForDrawing();
       currentStroke = null;
-    } 	
+    }
   };
 
   // Mouse Listeners (@jasmeet13n add touch listeners)
   var setMouseListeners;
   setMouseListeners = function () {
-  	var started = false;
+    var started = false;
     $(canvas).mousedown(function (e) {
-    	started = true;
-    	downFunction(e.offsetX, e.offsetY)
+      started = true;
+      downFunction(e.offsetX, e.offsetY)
     });
     $(canvas).mousemove(function (e) {
-    	if (started == false) {
-    		return;
-    	}
-    	moveFunction(e.offsetX, e.offsetY);
+      if (started == false) {
+        return;
+      }
+      moveFunction(e.offsetX, e.offsetY);
     });
     $(canvas).mouseup(function (e) {
-    	started = false;
-    	upFunction(e.offsetX, e.offsetY);
+      started = false;
+      upFunction(e.offsetX, e.offsetY);
     });
   };
 
   var setTouchListeners;
   setTouchListeners = function () {
-  	var rect = canvas.getBoundingClientRect();
-  	var started = false;
- 	canvas.addEventListener('touchstart', function (e) {
- 		started = true;
- 		if (e.target == canvas) {e.preventDefault();}
- 		var touchObj = e.touches[0];
- 		downFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
- 	}, false);
-	canvas.addEventListener('touchmove', function (e) {
-		if (e.target == canvas) {e.preventDefault();}
-		if (started == false) {
-			return;
-		}
- 		var touchObj = e.touches[0];
- 		moveFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
-	}, false);
-	canvas.addEventListener('touchend', function (e) {
-		started = false;
- 		if (e.target == canvas) {e.preventDefault();}
- 		var touchObj = e.changedTouches[0];
- 		upFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
-	}, false);
+    var rect = canvas.getBoundingClientRect();
+    var started = false;
+    canvas.addEventListener('touchstart', function (e) {
+      started = true;
+      if (e.target == canvas) {e.preventDefault();}
+      var touchObj = e.touches[0];
+      downFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+    }, false);
+    canvas.addEventListener('touchmove', function (e) {
+      if (e.target == canvas) {e.preventDefault();}
+      if (started == false) {
+        return;
+      }
+      var touchObj = e.touches[0];
+      moveFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+    }, false);
+    canvas.addEventListener('touchend', function (e) {
+      started = false;
+      if (e.target == canvas) {e.preventDefault();}
+      var touchObj = e.changedTouches[0];
+      upFunction(touchObj.clientX - rect.left, touchObj.clientY - rect.top);
+    }, false);
   };
 
   // Enable mouse listeners if config says so.
@@ -169,6 +171,7 @@ SketchEditor = function(el, options) {
   // Clear the current  sketch.
   this.clear = function() {
     $("#result-table").html("");
+    this.multiStroke = [];
     sketch = new Code(30);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
@@ -402,11 +405,8 @@ Line = function() {
       result = true;
     } else if (bb2.x < bb1.x && bb2.x + bb2.width > bb1.x + bb1.width) {
       result = true;
-    } else if (bb1.x + bb1.width > bb2.x && bb1.x + bb1.width < bb2.x + bb2.width) {
-      result = true;
-    } else if (bb1.x > bb2.x && bb1.x < bb2.x + bb2.width) {
-      result = true;
     }
+
     return result;
   };
 
@@ -445,16 +445,9 @@ Line = function() {
       return;
     }
     var result = [];
-    result.push("</code>");
+    result.push("</code>")
     for (var i = this.strokes.length - 1; i >= 0; ) {
-      //console.log(this.strokes[i]);
-      var inter = this.strokes[i].interpretations[0];
-      if (inter == '<') {
-        inter = "&lt;";
-      } else if (inter == '>') {
-        inter = "&gt;";
-      }
-      result.push(inter);
+      result.push(this.strokes[i].interpretations[0]);
 
       var left = 0;
       if (i > 0) {
@@ -466,14 +459,13 @@ Line = function() {
       right = bbRight.x;
       var num = Math.floor((right - left)/30);
       for (var j = 0; j < num; ++j) {
-        result.push("&nbsp;");
+        result.push("&nbsp;&nbsp;");
       }
       i -= (this.strokes[i].mergedWith + 1);
     }
 
-    result.push("<code>");
+    result.push("<code>")
     result.reverse();
-    //console.log(result.join(""));
 
 
     $(selector).html(result.join(""));

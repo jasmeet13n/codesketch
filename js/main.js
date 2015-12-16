@@ -28,6 +28,16 @@ $(document).ready(function(){
 		recognizeRequest.send();
 	});
 
+	$(document).keypress(function (e) {
+		if (e.which == 13) {
+      e.preventDefault();
+			sketchEditor.clear();
+		} else if (e.which == 32) {
+      e.preventDefault();
+      sketchEditor.undo();
+    }
+	});
+
   $("#undo-button").click(function(){
     sketchEditor.undo();
   });
