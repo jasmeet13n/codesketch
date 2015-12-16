@@ -2,6 +2,8 @@ import math
 from PIL import Image, ImageDraw
 import numpy
 
+rowN = 20
+colN = 20
 
 class Features:
   def __init__(self, data):
@@ -35,21 +37,21 @@ class Features:
     if self.yMax - self.yMin != 0:
       ret.append(float(self.totalStrokeLength) / float(self.yMax - self.yMin))
     else:
-      ret.append(0.0)
+      ret.append(float(self.totalStrokeLength))
 
     if self.xMax - self.xMin != 0:
       ret.append(float(self.totalStrokeLength) / float(self.xMax - self.xMin))
     else:
-      ret.append(0.0)
+      ret.append(float(self.totalStrokeLength))
     # height/width
     if(self.xMax - self.xMin != 0):
       ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
     else:
-      ret.append(100.0)
+      ret.append(float(self.yMax - self.yMin))
     # curviness
     # ret.append(self.curviness)
     # numStroke
-    # ret.append(self.numStroke)
+    ret.append(self.numStroke)
     return ret
 
   def calculateTotalStrokeLength(self):
@@ -148,8 +150,8 @@ class Features:
     self.resampledData = self.data
 
   def calculateVisualFeatures(self):
-    # out_file = open('characters', 'a')
-    Matrix = [[0 for x in range(16)] for x in range(16)]
+    out_file = open('characters', 'a')
+    Matrix = [[0 for x in range(colN)] for x in range(rowN)]
     img = Image.new('RGB', (self.xMax - self.xMin + 1, self.yMax - self.yMin + 1), "black")
     draw = ImageDraw.Draw(img)
 
@@ -162,27 +164,28 @@ class Features:
         prev = stroke[idx - 1]
         draw.line([(prev[0] - self.xMin, prev[1] - self.yMin), (row[0] - self.xMin, row[1] - self.yMin)], fill="white")
         #idx = idx + 1
-      img_new = img.resize( ( 16, 16 ), Image.BICUBIC)
+      img_new = img.resize( ( colN, rowN ), Image.BICUBIC)
       d = numpy.asarray(img_new.convert('L'))
 
-    for i in range(16):
-      for j in range(16):
+    for i in range(rowN):
+      for j in range(colN):
         if(d[i][j] != 0):
           Matrix[i][j] = 1
 
-    # for row in Matrix:
-    #   for val in row:
-    #     out_file.write(str(val))
-    #   out_file.write('\n')
-    # out_file.write('\n')
-    # out_file.write("******************************")
-    # out_file.write('\n')
-    # out_file.close()
+    for row in Matrix:
+      for val in row:
+        out_file.write(str(val))
+      out_file.write('\n')
+    out_file.write('\n')
+    out_file.write("******************************")
+    out_file.write('\n')
+    out_file.close()
 
 
     for row in Matrix:
       for val in row:
         self.visualFeatures.append(val)
+
 
   def processFeatures(self):
     self.calculateTotalStrokeLength()

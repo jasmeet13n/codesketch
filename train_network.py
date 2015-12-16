@@ -1,9 +1,4 @@
-# from pybrain.datasets import SupervisedDataSet
-# from pybrain.tools.customxml import NetworkWriter
-# from pybrain.tools.customxml import NetworkReader
-# from pybrain.tools.shortcuts import buildNetwork
-# from pybrain.supervised.trainers import BackpropTrainer
-# from sklearn.svm import SVC
+from sklearn.svm import SVC
 # from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from feature_extraction import Features
@@ -17,21 +12,17 @@ class Trainer:
     # self.dataset = []
     self.input_arr = []
     self.target = []
-    self.clf = KNeighborsClassifier()
-    if os.path.exists('clf.pkl'):
-      self.clf = pickle.load(open('clf.pkl', "rb"))
+    self.clf = SVC(kernel='rbf')
+    #self.clf = KNeighborsClassifier()
+    # if os.path.exists('clf.pkl'):
+    #   self.clf = pickle.load(open('clf.pkl', "rb"))
 
   def addTrainingSetEntry(self, data, target, convert):
-    # out_file = open('characters','a')
-    # out_file.write(target)
-    # out_file.write('\n')
-    # out_file.close()
     if convert:
       data = convertJsonToList(data)
     featuresObject = Features(data)
     featuresObject.processFeatures()
     input = featuresObject.getFeatures()
-    #self.dataset.append([input, [ord(target)]])
     outfile = open('training_data.csv', 'a')
     outfile.write(','.join(map(str, input)))
     outfile.write(',')
@@ -46,39 +37,21 @@ class Trainer:
     for i in range(5):
       for line in lines:
         data = [float(x) for x in line.strip().split(',') if x != '']
-        # indata =  data[:-1]
-        # outdata = int(data[-1])
-        # self.dataset.append([indata,outdata])
         self.input_arr.append(data[:-1])
         self.target.append(data[-1])
 
-    clf = KNeighborsClassifier()
-    clf.fit(self.input_arr, self.target)
-    pickle.dump(clf, open('clf.pkl', "wb"))
+    self.clf.fit(self.input_arr, self.target)
+    predicted = self.clf.predict(self.input_arr)
+    count = 0.0
+    for i in range(len(self.target)):
+      if predicted[i] == self.target[i]:
+        count += 1
+
+    print "Accuracy:", count/(len(self.target))
+    pickle.dump(self.clf, open('clf.pkl', "wb"))
     tf.close()
 
-  # def trainNetwork(self):
-  #   tf = open('training_data.csv','r')
-
-    # for line in tf.readlines():
-    #   data = [float(x) for x in line.strip().split(',') if x != '']
-    #   indata =  data[:-1]
-    #   outdata = int(data[-1])
-    #   self.dataset.append([indata,outdata])
-
-  #   trainingSet = SupervisedDataSet(len(self.dataset[0][0]), 1);
-  #   for ri in range(0,50000):
-  #     input,target = self.dataset[random.randint(0,len(self.dataset) - 1)];
-  #     trainingSet.addSample(input, target)
-
-  #   net = buildNetwork(trainingSet.indim, 5, trainingSet.outdim, bias=True)
-  #   trainer = BackpropTrainer(net, trainingSet, learningrate = 0.001, momentum = 0.99)
-  #   trainer.trainUntilConvergence(verbose=True,
-  #                                 trainingData=trainingSet,
-  #                                 validationData=trainingSet,
-  #                                 maxEpochs=10)
-  #   NetworkWriter.writeToFile(net, 'trainedNet.xml')
-  #   tf.close()
+  
 
   def testNetwork(self, data):
     converted_json = self.convertJsonToList(data)
@@ -87,9 +60,6 @@ class Trainer:
     input_arr = featuresObject.getFeatures()
     print "in testNetwork"
     print input_arr
-    # net = NetworkReader.readFrom('trainedNet.xml')
-    # clf = KNeighborsClassifier()
-    # self.clf = pickle.load(open('clf.pkl', "rb"))
     return chr(self.clf.predict(input_arr))
 
   def convertJsonToList(self, json_data):

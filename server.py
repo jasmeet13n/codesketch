@@ -9,6 +9,7 @@ import urlparse
 PORT_NUMBER = 8080
 
 trainer = Trainer()
+trainer.trainNetwork()
 
 class myHandler(BaseHTTPRequestHandler):
 
@@ -40,10 +41,31 @@ class myHandler(BaseHTTPRequestHandler):
       self.send_response(200)
       self.end_headers()
 
-      data = json.loads(self.data_string)
-      trainer = Trainer()
-      trainer.addTrainingSetEntry(data, result.query, True) #change the target appropriately
+      self.addPointsToFile(self.data_string, result.query.split('=')[-1])
+      
+      #trainer.addTrainingSetEntry(data, result.query, True) #change the target appropriately
+
       return
+
+  def addPointsToFile(self, data, character):
+    print "in addPointsToFile for ", character
+    converted_data = trainer.convertJsonToList(data)
+    # print converted_data
+    outfile = open('points_data', 'a')
+    outfile.write('.SEGMENT "')
+    outfile.write(character)
+    outfile.write('"')
+    outfile.write('\n')
+    for stroke in converted_data:
+      outfile.write(".PEN_DOWN\n")
+      for points in stroke:
+        outfile.write(str(points[0]))
+        outfile.write(' ')
+        outfile.write(str(points[1]))
+        outfile.write('\n')
+      outfile.write("\n.PEN_UP\n")
+    outfile.write('\n')
+    outfile.close()
 
       
       

@@ -1,7 +1,7 @@
 from train_network import Trainer
 
 if __name__ == '__main__':
-  file = open('UJIpenchars', 'r')
+  file = open('points_data', 'r')
   # file = open('multi', 'r')
   #file = open('A.txt', 'r')
   lines = file.readlines()
@@ -22,6 +22,14 @@ if __name__ == '__main__':
         if currCharacter[0] < 'A' or currCharacter[0] > 'Z':
           trainer.addTrainingSetEntry(strokes, currCharacter, False)
       currCharacter = line.strip().split(' ')[-1].strip('"')
+      if currCharacter == '%3C':
+        currCharacter = '<'
+      elif currCharacter == '%3E':
+        currCharacter = '>'
+      elif currCharacter == '^':
+        currCharacter = '#'
+      elif currCharacter == 'eq':
+        currCharacter = '='
       strokes = []
       points = []
       first = False
@@ -38,5 +46,5 @@ if __name__ == '__main__':
       points.append(data)
     i += 1
   trainer.addTrainingSetEntry(strokes, currCharacter, False)
-  trainer.trainNetwork()
+  #trainer.trainNetwork()
   file.close()
