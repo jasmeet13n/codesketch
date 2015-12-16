@@ -54,7 +54,7 @@ SketchEditor = function(el, options) {
   var ctx = canvas.getContext("2d");
   canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false; }, false);
 
-  var sketch = new Code(30);
+  var sketch = new Code(10);
 
   var curContext = 0;
 
@@ -62,12 +62,15 @@ SketchEditor = function(el, options) {
     if (selection == 0) {
       console.log("start coding");
       curContext = 0;
-    } else {
+    } else if (selection == 1) {
       console.log("start commenting");
       curContext = 1;
+    } else if (selection == 2) {
+      curContext = 2;
     }
   };
 
+  var commandStroke = null;
   var currentStroke = null;
   var newThingsToBeDrawn = true;
 
@@ -76,19 +79,70 @@ SketchEditor = function(el, options) {
   var downFunction;
   var moveFunction;
   var upFunction;
+  var processCommandStroke;
+
+  var redrawCanvas;
+  redrawCanvas = function() {
+    ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
+    drawGrid(ctx);
+    commandStroke = null;
+    currentStroke = null;
+    ctx.save();
+    sketch.draw(ctx);
+    ctx.restore();
+  };
+
+  processCommandStroke = function() {
+    if (commandStroke == null) {
+      return;
+    }
+    var multiStroke = [];
+    multiStroke.push(commandStroke);
+    var jsonData = JSON.stringify(multiStroke);
+    var predictedLineNumber = sketch.predictLineNumber(commandStroke);
+    var ans = $.ajax({
+      type: 'POST',
+      url: "http://localhost:8000/test",
+      data: jsonData,
+      context: SketchEditor,
+      success: function(data, success) {
+        console.log("Command " + data);
+        if (data == '>') {
+          console.log('Add line before ' + predictedLineNumber);
+          sketch.addLineBefore(predictedLineNumber);
+          redrawCanvas();
+        } else if (data == '<') {
+          sketch.removeLine(predictedLineNumber);
+          redrawCanvas();
+        } else if (data == 'o' || data == '0') {
+          // Compile and Run
+          alert("Compile and Run not supported!");
+        }
+      },
+      async:true
+    });
+  };
 
   downFunction = function(x, y) {
   	// console.log("In down function " + x + ", " + y);
-    currentStroke = new Stroke();
-    currentStroke.style = new Style();
+    if (curContext == 0 || curContext == 1) {
+      currentStroke = new Stroke();
+      currentStroke.style = new Style();
+    } else if (curContext == 2) {
+      commandStroke = new Stroke();
+    }
     if (curContext == 0) {
       currentStroke.style.stroke = new Color(50, 0, 300);
-    } else {
+    } else if (curContext == 1) {
       currentStroke.style.stroke = new Color(300, 0, 50);
     }
-    currentStroke.style.strokeWidth = 2;
-    currentStroke.addPoint(new Point(x, y));
-    editor.newThingsAddedForDrawing();
+    if (curContext == 0 || curContext == 1) {
+      currentStroke.style.strokeWidth = 2;
+      currentStroke.addPoint(new Point(x, y));
+      editor.newThingsAddedForDrawing();
+    } else if (curContext == 2) {
+      commandStroke.addPoint(new Point(x, y));
+    }
   };
 
   moveFunction = function(x, y) {
@@ -96,6 +150,8 @@ SketchEditor = function(el, options) {
     if (currentStroke != null) {
       currentStroke.addPoint(new Point(x, y));
       editor.newThingsAddedForDrawing();
+    } else if (commandStroke != null) {
+      commandStroke.addPoint(new Point(x, y));
     }
   };
 
@@ -108,11 +164,13 @@ SketchEditor = function(el, options) {
       } else {
         sketch.addComment(currentStroke);
       }
-      //onStrokeListener(currentStroke);
       editor.newThingsAddedForDrawing();
       draw();
       currentStroke = null;
-    } 	
+    } else if (commandStroke != null) {
+      processCommandStroke();
+      commandStroke = null;
+    }
   };
 
   // Mouse Listeners (@jasmeet13n add touch listeners)
@@ -170,9 +228,10 @@ SketchEditor = function(el, options) {
   // Clear the current  sketch.
   this.clear = function() {
     $("#result-table").html("");
-    sketch = new Code(30);
+    sketch = new Code(10);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
+    commandStroke = null;
     currentStroke = null;
   };
 
@@ -180,6 +239,7 @@ SketchEditor = function(el, options) {
     sketch.undo();
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
+    commandStroke = null;
     currentStroke = null;
     ctx.save();
     sketch.draw(ctx);
@@ -190,7 +250,6 @@ SketchEditor = function(el, options) {
   var interval;
   this.newThingsAddedForDrawing = function() {
     newThingsToBeDrawn = true;
-    //draw();
   };
 
   this.start = function(){
@@ -249,31 +308,6 @@ SketchEditor = function(el, options) {
   if(config.grid.show) {
     drawGrid(ctx);
   }
-
-  // Other Functions.
-  this.setOnStrokeListener = function(listener) {
-    onStrokeListener = listener;
-  };
-  this.setSketch = function(newSketch) {
-    sketch = newSketch;
-    editor.invalidate();
-  };
-  this.getSketch = function() {
-    return sketch;
-  };
-  this.getWidth = function() {
-    return config.width;
-  };
-  this.getHeight = function() {
-    return config.height;
-  };
-  this.setShowGrid = function(enabled) {
-    if(enabled)
-      config.grid.show = true;
-    else
-      config.grid.show = false;
-    this.invalidate();
-  }
 };
 
 
@@ -302,12 +336,88 @@ Code = function(numLines) {
     }
   };
 
+  this.addLineBefore = function(givenLineNumber) {
+    this.addLines(1);
+    for (var i = this.lines.length - 1; i > givenLineNumber; --i) {
+      this.lines[i] = this.lines[i - 1];
+      this.lines[i].lineNumber = i;
+      this.lines[i].updateLine();
+    }
+    this.lines[givenLineNumber] = new Line();
+    this.lines[givenLineNumber].lineNumber = givenLineNumber;
+    this.lines[givenLineNumber].updateLine();
+
+    for (var i = 0; i < this.lastEditedLine.length; ++i) {
+      if (this.lastEditedLine[i] >= givenLineNumber) {
+        this.lastEditedLine[i] += 1;
+      }
+    }
+
+    for (var i = givenLineNumber + 1; i < this.lines.length; ++i) {
+      var line = this.lines[i];
+      for (var j = 0; j < line.strokes.length; ++j) {
+        var stroke = line.strokes[j];
+        var mergedStroke = line.mergedStrokes[j];
+        if (stroke == mergedStroke) {
+          stroke.shiftPointsVertical(40);
+          console.log("They were same");
+        } else {
+          stroke.shiftPointsVertical(40);
+          mergedStroke.shiftPointsVertical(40);
+          console.log("They were different");
+        }
+      }
+    }
+    //console.log(this.lines);
+  };
+
+  this.removeLine = function(givenLineNumber) {
+    this.lines[givenLineNumber] = null;
+    for (var i = givenLineNumber; i < this.lines.length - 2; ++i) {
+      this.lines[i] = this.lines[i + 1];
+      this.lines[i].lineNumber = i;
+      this.lines[i].updateLine();
+    }
+
+    this.lines[this.lines.length - 1] = null;
+    this.lines.pop();
+
+    var backUp = [];
+    for (var i = 0; i < this.lastEditedLine.length; ++i) {
+      if (this.lastEditedLine[i] < givenLineNumber) {
+        backUp.push(this.lastEditedLine[i]);
+      } else if (this.lastEditedLine[i] > givenLineNumber) {
+        backUp.push(this.lastEditedLine[i] - 1);
+      }
+    }
+    this.lastEditedLine = [];
+    for (var i = 0; i < backUp.length; ++i) {
+      this.lastEditedLine.push(backUp[i]);
+    }
+
+    for (var i = givenLineNumber; i < this.lines.length; ++i) {
+      var line = this.lines[i];
+      for (var j = 0; j < line.strokes.length; ++j) {
+        var stroke = line.strokes[j];
+        var mergedStroke = line.mergedStrokes[j];
+        if (stroke == mergedStroke) {
+          stroke.shiftPointsVertical(-40);
+          console.log("They were same");
+        } else {
+          stroke.shiftPointsVertical(-40);
+          mergedStroke.shiftPointsVertical(-40);
+          console.log("They were different");
+        }
+      }
+    }
+    //console.log(this.lines);
+  };
+
   if (numLines > 0) {
     this.increaseLinesLengthTo(numLines);
   }
 
-  var predictLineNumber;
-  predictLineNumber = function(stroke) {
+  this.predictLineNumber = function(stroke) {
     var bb = stroke.getBoundingBox();
     var lineNumber = Math.floor(bb.cy/40);
     //console.log("Predicted Line Number: " + lineNumber);
@@ -321,7 +431,7 @@ Code = function(numLines) {
   };
 
   this.addStroke = function(stroke) {
-    var predictedLineNumber = predictLineNumber(stroke);
+    var predictedLineNumber = this.predictLineNumber(stroke);
     this.addStrokeToLine(stroke, predictedLineNumber);
   };
 
@@ -474,9 +584,6 @@ Line = function() {
 
     result.push("<code>");
     result.reverse();
-    //console.log(result.join(""));
-
-
     $(selector).html(result.join(""));
   };
 
@@ -514,11 +621,6 @@ Line = function() {
 
     // make merged stroke to json object
     var jsonData = JSON.stringify(multiStroke);
-    //console.log(jsonData);
-    //var result = $.post("http://10.202.137.106:8080/test", jsonData, function(data, status){
-    //  return;
-    //});
-
     var ans = $.ajax({
       type: 'POST',
       url: "http://localhost:8000/test",
@@ -530,14 +632,6 @@ Line = function() {
       },
       async:true
     });
-    //console.log(ans);
-    //this.strokes[this.strokes.length - 1].interpretations.push(ans.responseText);
-
-
-    // get interpretation
-
-    // print line to text area
-
   };
 
   this.getStrokeById = function(id){
@@ -613,6 +707,16 @@ Stroke = function(){
   this.addPoint = function(pt) {
     boundingBox.addPoint(pt);
     this.points.push(pt);
+  };
+
+
+  this.shiftPointsVertical = function(offset) {
+    boundingBox.reinitialize();
+    for (var i = 0; i < this.points.length; ++i) {
+      var point = this.points[i];
+      point.y += offset;
+      boundingBox.addPoint(point);
+    }
   };
 
   this.copy = function(stroke) {

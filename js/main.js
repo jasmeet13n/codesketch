@@ -1,3 +1,7 @@
+var baseURL = "http://localhost:8000";
+var testURL = baseURL + "/test";
+var trainURL = baseURL + "/train";
+
 $(document).ready(function(){
 	var mouseDown = 0;
 	$(document).mousedown(function() { 
@@ -12,21 +16,6 @@ $(document).ready(function(){
 		height:1000
 	});
 	sketchEditor.start();
-
-  sketchEditor.setOnStrokeListener(function(currentStroke){
-		var options = [];
-		var recognizeRequest = new RecognizeStrokeRequest(currentStroke, options).success(
-			function(response){
-				var bestShape = response.bestShape;
-				if(bestShape)
-					currentStroke.setInterpretations(bestShape.interpretations);
-				showResult(currentStroke);
-				sketchEditor.invalidate();
-			}
-		);
-
-		recognizeRequest.send();
-	});
 
 	$(document).keypress(function (e) {
 		if (e.which == 13) {
@@ -53,8 +42,15 @@ $(document).ready(function(){
     $("#code-switch").toggleClass("btn-success");
     $("#code-switch").toggleClass("btn-default");
     sketchEditor.changeContextTo(0);
-    $("#comment-switch").toggleClass("btn-default");
-    $("#comment-switch").toggleClass("btn-success");
+    if ($("#comment-switch").hasClass("btn-success")) {
+      $("#comment-switch").toggleClass("btn-success");
+      $("#comment-switch").toggleClass("btn-default");
+
+    }
+    if ($("#command-switch").hasClass("btn-success")) {
+      $("#command-switch").toggleClass("btn-success");
+      $("#command-switch").toggleClass("btn-default");
+    }
   });
 
   $("#comment-switch").click(function(){
@@ -64,7 +60,32 @@ $(document).ready(function(){
     $("#comment-switch").toggleClass("btn-default");
     $("#comment-switch").toggleClass("btn-success");
     sketchEditor.changeContextTo(1);
-    $("#code-switch").toggleClass("btn-success");
-    $("#code-switch").toggleClass("btn-default");
+    if ($("#code-switch").hasClass("btn-success")) {
+      $("#code-switch").toggleClass("btn-success");
+      $("#code-switch").toggleClass("btn-default");
+
+    }
+    if ($("#command-switch").hasClass("btn-success")) {
+      $("#command-switch").toggleClass("btn-success");
+      $("#command-switch").toggleClass("btn-default");
+    }
+  });
+
+  $("#command-switch").click(function(){
+    if ($("#command-switch").hasClass("btn-success")) {
+      return;
+    }
+    $("#command-switch").toggleClass("btn-success");
+    $("#command-switch").toggleClass("btn-default");
+    sketchEditor.changeContextTo(2);
+    if ($("#code-switch").hasClass("btn-success")) {
+      $("#code-switch").toggleClass("btn-success");
+      $("#code-switch").toggleClass("btn-default");
+
+    }
+    if ($("#comment-switch").hasClass("btn-success")) {
+      $("#comment-switch").toggleClass("btn-success");
+      $("#comment-switch").toggleClass("btn-default");
+    }
   });
 });
