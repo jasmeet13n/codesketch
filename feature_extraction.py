@@ -157,7 +157,7 @@ class Features:
     self.resampledData = self.data
 
   def calculateVisualFeatures(self):
-    out_file = open('characters', 'a')
+    # out_file = open('characters', 'a')
     Matrix = [[0 for x in range(colN)] for x in range(rowN)]
     img = Image.new('RGB', (self.xMax - self.xMin + 1, self.yMax - self.yMin + 1), "black")
     draw = ImageDraw.Draw(img)
@@ -181,14 +181,14 @@ class Features:
         if(d[i][j] != 0):
           Matrix[i][j] = 1
 
-    for row in Matrix:
-      for val in row:
-        out_file.write(str(val))
-      out_file.write('\n')
-    out_file.write('\n')
-    out_file.write("******************************")
-    out_file.write('\n')
-    out_file.close()
+    # for row in Matrix:
+    #   for val in row:
+    #     out_file.write(str(val))
+    #   out_file.write('\n')
+    # out_file.write('\n')
+    # out_file.write("******************************")
+    # out_file.write('\n')
+    # out_file.close()
 
 
     for row in Matrix:

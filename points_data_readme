@@ -1,0 +1,16 @@
+Each character starts with ".SEGMENT"
+The character is represented after ".SEGMENT"
+.PEN_DOWN represents PEN DOWN
+.PEN_UP represents PEN UP
+The x,y coordinates follow the ".SEGMENT"
+Multiple strokes for characters are multiple ".PEN_DOWN - .PEN_UP" constructs after ".SEGMENT"
+
+
+Few Special characters have different representation
+
+'%3C' represents '<'
+'%3E' represents '>'
+'^' represents '#'
+'eq' represents '='
+'%22' represents '"' (back quotes)
+'fq' represents '"' (forward quotes)
