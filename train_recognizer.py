@@ -30,6 +30,8 @@ if __name__ == '__main__':
         currCharacter = '#'
       elif currCharacter == 'eq':
         currCharacter = '='
+      elif currCharacter == '%22' or currCharacter == 'fq':
+        currCharacter = '"'
       strokes = []
       points = []
       first = False
