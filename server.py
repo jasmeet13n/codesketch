@@ -6,7 +6,7 @@ import json
 from train_network import Trainer
 import urlparse
 
-PORT_NUMBER = 8080
+PORT_NUMBER = 8000
 
 trainer = Trainer()
 trainer.trainNetwork()

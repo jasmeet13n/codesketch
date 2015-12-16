@@ -1,6 +1,7 @@
 import math
 from PIL import Image, ImageDraw
 import numpy
+# import time
 
 rowN = 20
 colN = 20
@@ -48,6 +49,12 @@ class Features:
       ret.append(float(self.yMax - self.yMin) / float(self.xMax - self.xMin))
     else:
       ret.append(float(self.yMax - self.yMin))
+    #horixontal or vertical : 0 for horizontal 1 for vertical
+    if(self.yMax - self.yMin > self.xMax - self.xMin):
+      ret.append(1)
+    else:
+      ret.append(0)
+
     # curviness
     # ret.append(self.curviness)
     # numStroke
@@ -165,6 +172,8 @@ class Features:
         draw.line([(prev[0] - self.xMin, prev[1] - self.yMin), (row[0] - self.xMin, row[1] - self.yMin)], fill="white")
         #idx = idx + 1
       img_new = img.resize( ( colN, rowN ), Image.BICUBIC)
+      # img_save = img.resize((200,200), Image.ANTIALIAS)
+      # img_save.save(str(time.time())+".png")
       d = numpy.asarray(img_new.convert('L'))
 
     for i in range(rowN):
