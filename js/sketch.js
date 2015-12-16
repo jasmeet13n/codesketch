@@ -82,11 +82,11 @@ SketchEditor = function(el, options) {
     currentStroke = new Stroke();
     currentStroke.style = new Style();
     if (curContext == 0) {
-      currentStroke.style.stroke = new Color(100, 0, 200);
+      currentStroke.style.stroke = new Color(50, 0, 300);
     } else {
-      currentStroke.style.stroke = new Color(200, 0, 100);
+      currentStroke.style.stroke = new Color(300, 0, 50);
     }
-    currentStroke.style.strokeWidth = 1;
+    currentStroke.style.strokeWidth = 2;
     currentStroke.addPoint(new Point(x, y));
     editor.newThingsAddedForDrawing();
   };
