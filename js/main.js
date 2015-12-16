@@ -1,6 +1,7 @@
 var baseURL = "http://localhost:8000";
 var testURL = baseURL + "/test";
 var trainURL = baseURL + "/train";
+var gSketchEditor;
 
 $(document).ready(function(){
 	var mouseDown = 0;
@@ -15,6 +16,7 @@ $(document).ready(function(){
 		width:650,
 		height:1000
 	});
+  gSketchEditor = sketchEditor;
 	sketchEditor.start();
 
 	$(document).keypress(function (e) {

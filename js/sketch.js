@@ -70,7 +70,6 @@ SketchEditor = function(el, options) {
     }
   };
 
-  var commandStroke = null;
   var currentStroke = null;
   var newThingsToBeDrawn = true;
 
@@ -81,11 +80,20 @@ SketchEditor = function(el, options) {
   var upFunction;
   var processCommandStroke;
 
+  this.undo = function() {
+    sketch.undo();
+    ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
+    drawGrid(ctx);
+    currentStroke = null;
+    ctx.save();
+    sketch.draw(ctx);
+    ctx.restore();
+  };
+
   var redrawCanvas;
   redrawCanvas = function() {
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
-    commandStroke = null;
     currentStroke = null;
     ctx.save();
     sketch.draw(ctx);
@@ -93,31 +101,30 @@ SketchEditor = function(el, options) {
   };
 
   processCommandStroke = function() {
-    if (commandStroke == null) {
+    if (currentStroke == null) {
       return;
     }
     var multiStroke = [];
-    multiStroke.push(commandStroke);
+    multiStroke.push(currentStroke);
     var jsonData = JSON.stringify(multiStroke);
-    var predictedLineNumber = sketch.predictLineNumber(commandStroke);
+    var predictedLineNumber = sketch.predictLineNumber(currentStroke);
     var ans = $.ajax({
       type: 'POST',
-      url: "http://localhost:8000/test",
+      url: testURL,
       data: jsonData,
-      context: SketchEditor,
+      context: gSketchEditor,
       success: function(data, success) {
         console.log("Command " + data);
         if (data == '>') {
           console.log('Add line before ' + predictedLineNumber);
           sketch.addLineBefore(predictedLineNumber);
-          redrawCanvas();
         } else if (data == '<') {
           sketch.removeLine(predictedLineNumber);
-          redrawCanvas();
         } else if (data == 'o' || data == '0') {
           // Compile and Run
           alert("Compile and Run not supported!");
         }
+        this.undo();
       },
       async:true
     });
@@ -125,24 +132,20 @@ SketchEditor = function(el, options) {
 
   downFunction = function(x, y) {
   	// console.log("In down function " + x + ", " + y);
-    if (curContext == 0 || curContext == 1) {
-      currentStroke = new Stroke();
-      currentStroke.style = new Style();
-    } else if (curContext == 2) {
-      commandStroke = new Stroke();
-    }
+    currentStroke = new Stroke();
+    currentStroke.style = new Style();
+
     if (curContext == 0) {
       currentStroke.style.stroke = new Color(50, 0, 300);
     } else if (curContext == 1) {
       currentStroke.style.stroke = new Color(300, 0, 50);
-    }
-    if (curContext == 0 || curContext == 1) {
-      currentStroke.style.strokeWidth = 2;
-      currentStroke.addPoint(new Point(x, y));
-      editor.newThingsAddedForDrawing();
     } else if (curContext == 2) {
-      commandStroke.addPoint(new Point(x, y));
+      currentStroke.style.stroke = new Color(0, 300, 50);
     }
+
+    currentStroke.style.strokeWidth = 2;
+    currentStroke.addPoint(new Point(x, y));
+    editor.newThingsAddedForDrawing();
   };
 
   moveFunction = function(x, y) {
@@ -150,8 +153,6 @@ SketchEditor = function(el, options) {
     if (currentStroke != null) {
       currentStroke.addPoint(new Point(x, y));
       editor.newThingsAddedForDrawing();
-    } else if (commandStroke != null) {
-      commandStroke.addPoint(new Point(x, y));
     }
   };
 
@@ -166,10 +167,10 @@ SketchEditor = function(el, options) {
       }
       editor.newThingsAddedForDrawing();
       draw();
+      if (curContext == 2) {
+        processCommandStroke();
+      }
       currentStroke = null;
-    } else if (commandStroke != null) {
-      processCommandStroke();
-      commandStroke = null;
     }
   };
 
@@ -231,19 +232,7 @@ SketchEditor = function(el, options) {
     sketch = new Code(10);
     ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
     drawGrid(ctx);
-    commandStroke = null;
     currentStroke = null;
-  };
-
-  this.undo = function() {
-    sketch.undo();
-    ctx.clearRect(0, 0, $(canvas).width(), $(canvas).height());
-    drawGrid(ctx);
-    commandStroke = null;
-    currentStroke = null;
-    ctx.save();
-    sketch.draw(ctx);
-    ctx.restore();
   };
 
   // Draw functions
@@ -354,20 +343,9 @@ Code = function(numLines) {
     }
 
     for (var i = givenLineNumber + 1; i < this.lines.length; ++i) {
-      var line = this.lines[i];
-      for (var j = 0; j < line.strokes.length; ++j) {
-        var stroke = line.strokes[j];
-        var mergedStroke = line.mergedStrokes[j];
-        if (stroke == mergedStroke) {
-          stroke.shiftPointsVertical(40);
-          console.log("They were same");
-        } else {
-          stroke.shiftPointsVertical(40);
-          mergedStroke.shiftPointsVertical(40);
-          console.log("They were different");
-        }
-      }
+      this.lines[i].shiftAllStrokesVertical(40);
     }
+    //this.commentLine.shiftAllStrokesVertical(40);
     //console.log(this.lines);
   };
 
@@ -396,20 +374,9 @@ Code = function(numLines) {
     }
 
     for (var i = givenLineNumber; i < this.lines.length; ++i) {
-      var line = this.lines[i];
-      for (var j = 0; j < line.strokes.length; ++j) {
-        var stroke = line.strokes[j];
-        var mergedStroke = line.mergedStrokes[j];
-        if (stroke == mergedStroke) {
-          stroke.shiftPointsVertical(-40);
-          console.log("They were same");
-        } else {
-          stroke.shiftPointsVertical(-40);
-          mergedStroke.shiftPointsVertical(-40);
-          console.log("They were different");
-        }
-      }
+      this.lines[i].shiftAllStrokesVertical(-40);
     }
+    //this.commentLine.shiftAllStrokesVertical(-40);
     //console.log(this.lines);
   };
 
@@ -499,6 +466,21 @@ Line = function() {
   this.strokes = [];
   this.mergedStrokes = [];
   var strokesById = {};
+
+  this.shiftAllStrokesVertical = function (offset) {
+    for (var j = 0; j < this.strokes.length; ++j) {
+      var stroke = this.strokes[j];
+      var mergedStroke = this.mergedStrokes[j];
+      if (stroke == mergedStroke) {
+        stroke.shiftPointsVertical(offset);
+        //console.log("They were same");
+      } else {
+        stroke.shiftPointsVertical(offset);
+        mergedStroke.shiftPointsVertical(offset);
+        //console.log("They were different");
+      }
+    }
+  }
 
   var canMergeWithLastStroke;
   canMergeWithLastStroke = function(stroke1, stroke2) {
@@ -623,7 +605,7 @@ Line = function() {
     var jsonData = JSON.stringify(multiStroke);
     var ans = $.ajax({
       type: 'POST',
-      url: "http://localhost:8000/test",
+      url: testURL,
       data: jsonData,
       context: this,
       success: function(data, success) {
